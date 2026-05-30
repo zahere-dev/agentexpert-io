@@ -1,53 +1,46 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+const roadmaps = [
+  { slug: 'zero-to-ai-agent', title: 'Zero to AI agent', desc: 'Understand what agents are, how LLMs reason, and build your first functional agent from scratch.', level: 'beginner', tags: ['LLMs', 'Tools', 'LangChain'] },
+  { slug: 'se-to-ai-engineer', title: 'Software engineer → AI engineer', desc: "Leverage your existing SE skills. A 3-month path based on Zahere's own transition at Dell.", level: 'intermediate', tags: ['GenAI', 'MLOps', 'System design'] },
+  { slug: 'production-agents', title: 'Production-grade agents', desc: 'Move beyond prototypes. Observability, reliability, human-in-the-loop, and scale.', level: 'advanced', tags: ['LangGraph', 'Observability', 'Scale'] },
+  { slug: 'agentic-rag', title: 'Agentic RAG mastery', desc: 'Go beyond naive RAG. Build agents that retrieve, reason, and synthesize intelligently.', level: 'intermediate', tags: ['RAG', 'Vector DBs', 'Retrieval'] },
+];
 ---
-<Layout title="Roadmaps" description="Structured AI agent learning paths — from zero to production.">
+<Layout title="Roadmaps" description="Structured AI agent learning paths.">
   <div class="container">
-    <div class="section-header">
-      <h1>🗺️ Roadmaps</h1>
-      <p>Structured learning paths so you always know what to study next. From your first agent to enterprise-grade multi-agent systems.</p>
-    </div>
-    <div class="grid">
-      <a href="/roadmaps/zero-to-ai-agent" class="card">
-        <div class="card-level beginner">Beginner</div>
-        <h3>Zero to AI Agent</h3>
-        <p>Start from scratch. Understand what agents are, how LLMs work as a brain, and build your first functional agent.</p>
-        <div class="card-tags">
-          <span class="tag">LLMs</span><span class="tag">Tools</span><span class="tag">LangChain</span>
-        </div>
-      </a>
-      <a href="/roadmaps/se-to-ai-engineer" class="card">
-        <div class="card-level intermediate">Intermediate</div>
-        <h3>Software Engineer → AI Engineer</h3>
-        <p>Leverage your existing SE skills. A 3-month roadmap based on Zahere's own transition journey at Dell.</p>
-        <div class="card-tags">
-          <span class="tag">GenAI</span><span class="tag">MLOps</span><span class="tag">System Design</span>
-        </div>
-      </a>
-      <a href="/roadmaps/production-agents" class="card">
-        <div class="card-level advanced">Advanced</div>
-        <h3>Production-Grade Agents</h3>
-        <p>Move beyond prototypes. Observability, reliability, human-in-the-loop, and deploying agents at scale.</p>
-        <div class="card-tags">
-          <span class="tag">LangGraph</span><span class="tag">Observability</span><span class="tag">Scale</span>
-        </div>
-      </a>
-      <a href="/roadmaps/agentic-rag" class="card">
-        <div class="card-level intermediate">Intermediate</div>
-        <h3>Agentic RAG Mastery</h3>
-        <p>Go beyond naive RAG. Build agents that retrieve, reason, and synthesize information intelligently.</p>
-        <div class="card-tags">
-          <span class="tag">RAG</span><span class="tag">Vector DBs</span><span class="tag">Retrieval</span>
-        </div>
-      </a>
+    <section class="page-header">
+      <h1>Roadmaps</h1>
+      <p>Structured learning paths — so you always know what to study next.</p>
+    </section>
+    <div class="list">
+      {roadmaps.map(r => (
+        <a href={`/roadmaps/${r.slug}`} class="list-item">
+          <div class="list-item-main">
+            <p class="list-title">{r.title}</p>
+            <p class="list-desc">{r.desc}</p>
+            <div class="list-tags">
+              <span class={`tag label-${r.level}`}>{r.level}</span>
+              {r.tags.map(t => <span class="tag">{t}</span>)}
+            </div>
+          </div>
+          <span class="arrow">→</span>
+        </a>
+      ))}
     </div>
   </div>
 </Layout>
 
 <style>
-  .card-level { font-size: 0.72rem; font-family: var(--font-mono); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; }
-  .beginner { color: #00ff88; } .intermediate { color: #f59e0b; } .advanced { color: #ef4444; }
-  .card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.75rem; }
-  .card p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.25rem; }
-  .card-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .page-header { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+  .page-header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .page-header p { font-size: 0.9rem; color: var(--muted); }
+  .list { display: flex; flex-direction: column; }
+  .list-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.5rem 0; border-bottom: 1px solid var(--border); transition: opacity 0.15s; }
+  .list-item:hover .list-title { text-decoration: underline; }
+  .list-item-main { flex: 1; }
+  .list-title { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.35rem; }
+  .list-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem; line-height: 1.5; }
+  .list-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .arrow { color: var(--muted); font-size: 0.9rem; flex-shrink: 0; margin-top: 0.1rem; }
 </style>
