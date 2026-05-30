@@ -1,0 +1,81 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = "The definitive resource for building AI agents — roadmaps, patterns, case studies and tips by Zahiruddin Tavargere" } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <title>{title} | agentexpert.io</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">agent<span>expert</span>.io</a>
+    <div class="nav-links">
+      <a href="/roadmaps">Roadmaps</a>
+      <a href="/patterns">Patterns</a>
+      <a href="/tips">Tips</a>
+      <a href="/case-studies">Case Studies</a>
+      <a href="/about">About</a>
+    </div>
+  </nav>
+  <main><slot /></main>
+  <footer>
+    <div class="footer-inner">
+      <p>Built by <a href="/about">Zahiruddin Tavargere (Zahere)</a> · Senior GenAI Architect @ Dell</p>
+      <div class="footer-links">
+        <a href="https://youtube.com/@adaptiveengineer" target="_blank">YouTube</a>
+        <a href="https://newsletter.adaptiveengineer.com" target="_blank">Newsletter</a>
+        <a href="https://twitter.com/zahiruddin_t" target="_blank">Twitter</a>
+        <a href="https://zahere.com" target="_blank">Blog</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --border: #1e1e2e;
+    --accent: #00ff88; --accent2: #7c3aed;
+    --text: #e2e8f0; --muted: #64748b;
+    --font-display: 'Syne', sans-serif; --font-mono: 'Space Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; display: flex; flex-direction: column; }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(10,10,15,0.9); backdrop-filter: blur(12px); z-index: 100; }
+  .logo { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--text); text-decoration: none; }
+  .logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--accent); }
+  main { flex: 1; }
+  footer { border-top: 1px solid var(--border); padding: 2rem; margin-top: 4rem; }
+  .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  footer p { color: var(--muted); font-size: 0.85rem; }
+  footer a { color: var(--accent); text-decoration: none; }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--accent); }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+  .tag { display: inline-block; padding: 0.2rem 0.6rem; background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.2); color: var(--accent); border-radius: 4px; font-size: 0.75rem; font-family: var(--font-mono); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; transition: border-color 0.2s, transform 0.2s; text-decoration: none; color: var(--text); display: block; }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; padding-bottom: 4rem; }
+  .prose { max-width: 720px; line-height: 1.8; color: var(--text); }
+  .prose h2 { font-size: 1.5rem; margin: 2rem 0 1rem; color: var(--accent); }
+  .prose h3 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; }
+  .prose p { margin-bottom: 1rem; color: var(--muted); }
+  .prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 1rem; color: var(--muted); }
+  .prose li { margin-bottom: 0.5rem; }
+  .prose code { font-family: var(--font-mono); background: var(--surface); border: 1px solid var(--border); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.85em; color: var(--accent); }
+  .prose pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; overflow-x: auto; margin-bottom: 1.5rem; }
+  .prose pre code { background: none; border: none; padding: 0; color: var(--text); }
+</style>
