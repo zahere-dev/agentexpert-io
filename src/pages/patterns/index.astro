@@ -1,0 +1,38 @@
+---
+import Layout from '../../layouts/Layout.astro';
+const categories = [
+  { id: 'tool-use', label: 'Tool Use', emoji: '🔧' },
+  { id: 'memory-state', label: 'Memory & State', emoji: '🧠' },
+  { id: 'multi-agent', label: 'Multi-Agent', emoji: '🤝' },
+  { id: 'rag', label: 'RAG', emoji: '📖' },
+  { id: 'mcp', label: 'MCP', emoji: '🔌' },
+  { id: 'human-loop', label: 'Human-in-the-Loop', emoji: '👤' },
+];
+---
+<Layout title="Patterns" description="Proven AI agent design patterns for production systems.">
+  <div class="container">
+    <div class="section-header">
+      <h1>🧩 Patterns</h1>
+      <p>Proven design patterns for building robust AI agents. Learn the building blocks used in production systems.</p>
+    </div>
+    <div class="categories">
+      {categories.map(c => (
+        <div class="cat-card">
+          <span class="cat-emoji">{c.emoji}</span>
+          <span class="cat-label">{c.label}</span>
+        </div>
+      ))}
+    </div>
+    <div class="coming-soon">
+      <p>📝 Patterns are being added. <a href="https://newsletter.adaptiveengineer.com" target="_blank">Subscribe to the newsletter</a> to get notified.</p>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .categories { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 3rem; }
+  .cat-card { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: border-color 0.2s; }
+  .cat-card:hover { border-color: var(--accent); }
+  .coming-soon { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; text-align: center; color: var(--muted); }
+  .coming-soon a { color: var(--accent); }
+</style>
