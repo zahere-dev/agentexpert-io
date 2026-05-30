@@ -1,10 +1,10 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
-import node from '@astrojs/node';
+import vercel from '@astrojs/vercel';
 import keystatic from '@keystatic/astro';
 
 export default defineConfig({
   integrations: [react(), keystatic()],
-  adapter: node({ mode: 'passthrough' }),
+  adapter: vercel(),
   output: 'server',
 });
