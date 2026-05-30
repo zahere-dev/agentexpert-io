@@ -1,38 +1,44 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-const categories = [
-  { id: 'tool-use', label: 'Tool Use', emoji: '🔧' },
-  { id: 'memory-state', label: 'Memory & State', emoji: '🧠' },
-  { id: 'multi-agent', label: 'Multi-Agent', emoji: '🤝' },
-  { id: 'rag', label: 'RAG', emoji: '📖' },
-  { id: 'mcp', label: 'MCP', emoji: '🔌' },
-  { id: 'human-loop', label: 'Human-in-the-Loop', emoji: '👤' },
+const patterns = [
+  { title: 'Tool use', desc: 'How agents decide when and how to call external tools.', count: 'Coming soon' },
+  { title: 'Memory & state', desc: 'In-context, external, and episodic memory strategies.', count: 'Coming soon' },
+  { title: 'Multi-agent orchestration', desc: 'Routing, delegation, and coordination between agents.', count: 'Coming soon' },
+  { title: 'RAG patterns', desc: 'Beyond naive retrieval — agentic, iterative, and hybrid approaches.', count: 'Coming soon' },
+  { title: 'MCP integration', desc: 'Building and consuming Model Context Protocol servers.', count: 'Coming soon' },
+  { title: 'Human-in-the-loop', desc: 'When and how to pause agents for human input.', count: 'Coming soon' },
 ];
 ---
-<Layout title="Patterns" description="Proven AI agent design patterns for production systems.">
+<Layout title="Patterns" description="Proven AI agent design patterns.">
   <div class="container">
-    <div class="section-header">
-      <h1>🧩 Patterns</h1>
-      <p>Proven design patterns for building robust AI agents. Learn the building blocks used in production systems.</p>
-    </div>
-    <div class="categories">
-      {categories.map(c => (
-        <div class="cat-card">
-          <span class="cat-emoji">{c.emoji}</span>
-          <span class="cat-label">{c.label}</span>
+    <section class="page-header">
+      <h1>Patterns</h1>
+      <p>Proven design patterns for building robust, production-grade agents.</p>
+    </section>
+    <div class="list">
+      {patterns.map(p => (
+        <div class="list-item">
+          <div>
+            <p class="list-title">{p.title}</p>
+            <p class="list-desc">{p.desc}</p>
+          </div>
+          <span class="soon">{p.count}</span>
         </div>
       ))}
     </div>
-    <div class="coming-soon">
-      <p>📝 Patterns are being added. <a href="https://newsletter.adaptiveengineer.com" target="_blank">Subscribe to the newsletter</a> to get notified.</p>
-    </div>
+    <p class="cta-note">Subscribe to <a href="https://newsletter.adaptiveengineer.com" target="_blank">The Adaptive Engineer</a> to be notified when patterns are published.</p>
   </div>
 </Layout>
 
 <style>
-  .categories { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 3rem; }
-  .cat-card { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: border-color 0.2s; }
-  .cat-card:hover { border-color: var(--accent); }
-  .coming-soon { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; text-align: center; color: var(--muted); }
-  .coming-soon a { color: var(--accent); }
+  .page-header { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+  .page-header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .page-header p { font-size: 0.9rem; color: var(--muted); }
+  .list { display: flex; flex-direction: column; }
+  .list-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.25rem 0; border-bottom: 1px solid var(--border); }
+  .list-title { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.25rem; }
+  .list-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+  .soon { font-size: 0.75rem; color: var(--muted); white-space: nowrap; margin-top: 0.1rem; flex-shrink: 0; }
+  .cta-note { font-size: 0.82rem; color: var(--muted); margin-top: 2rem; }
+  .cta-note a { border-bottom: 1px solid var(--border); color: var(--text); }
 </style>
