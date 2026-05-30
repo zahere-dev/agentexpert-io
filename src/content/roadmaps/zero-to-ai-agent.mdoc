@@ -1,0 +1,88 @@
+---
+title: Zero to AI Agent
+description: Start from scratch. Understand what agents are, how LLMs work as a reasoning engine, and build your first functional agent step by step.
+level: beginner
+tags: [LLMs, Tools, LangChain, Python, Agents]
+publishedAt: '2025-05-30'
+featured: true
+---
+
+## What You'll Learn
+
+By the end of this roadmap, you'll understand what AI agents are, how they use LLMs to reason and act, and you'll have built your first functional agent from scratch.
+
+## Phase 1 — Foundation (Week 1-2)
+
+### Understand LLMs as a Brain
+
+Before building agents, you need to understand the core engine. An LLM takes text in and produces text out. That's it. The magic of agents is in *how* you structure what goes in.
+
+- How transformer models work (conceptually)
+- Prompt engineering fundamentals
+- Understanding tokens, context windows, and temperature
+
+### Your First API Call
+
+```python
+from anthropic import Anthropic
+
+client = Anthropic()
+message = client.messages.create(
+    model="claude-opus-4-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "What is 2 + 2?"}]
+)
+print(message.content[0].text)
+```
+
+## Phase 2 — Tool Use (Week 3-4)
+
+Agents become powerful when they can *act* — not just respond. Tool use is the mechanism that gives agents hands.
+
+### Define a Tool
+
+```python
+tools = [{
+    "name": "get_weather",
+    "description": "Get the current weather for a location",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "location": {"type": "string", "description": "City name"}
+        },
+        "required": ["location"]
+    }
+}]
+```
+
+### The Tool Use Loop
+
+1. LLM receives a task
+2. LLM decides to use a tool
+3. Your code executes the tool
+4. Result goes back to LLM
+5. LLM responds with final answer
+
+## Phase 3 — Memory (Week 5-6)
+
+Agents need memory to maintain context across turns and sessions.
+
+- **In-context memory** — conversation history in the prompt
+- **External memory** — vector databases for long-term recall
+- **Episodic memory** — summaries of past interactions
+
+## Phase 4 — Your First Real Agent (Week 7-8)
+
+Build a research agent that:
+1. Accepts a topic
+2. Searches the web
+3. Reads relevant pages
+4. Synthesizes a report
+
+This combines tool use, multi-step reasoning, and basic memory.
+
+## Resources
+
+- [Anthropic Docs](https://docs.anthropic.com)
+- [LangChain Docs](https://python.langchain.com)
+- [Adaptive Engineer YouTube](https://youtube.com/@adaptiveengineer)
