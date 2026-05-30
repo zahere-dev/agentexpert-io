@@ -1,44 +1,42 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="About — Zahiruddin Tavargere" description="Senior GenAI Architect at Dell, YouTuber, and community builder passionate about AI agents.">
+<Layout title="About — Zahiruddin Tavargere" description="Senior GenAI Architect at Dell, YouTuber, and community builder.">
   <div class="container">
-    <div class="about-page">
-      <div class="about-header">
-        <div class="chip">The Expert</div>
-        <h1>Zahiruddin Tavargere</h1>
-        <p class="title-line">Senior Principal Engineer & GenAI Architect @ Dell · Bengaluru, India</p>
+    <section class="about-page">
+      <h1>Zahiruddin Tavargere</h1>
+      <p class="sub">Senior Principal Engineer & GenAI Architect @ Dell · Bengaluru, India</p>
+
+      <div class="prose">
+        <h2>Background</h2>
+        <p>I'm a firm believer in social learning. I owe my dev career to all the tech content creators I learned from — this site is my contribution back to the community.</p>
+        <p>After 15+ years building distributed systems, automation tools, and software architecture, I was tasked to lead a GenAI team at Dell. I transitioned into AI engineering within 3 months and have been deep in the agent-building world ever since.</p>
+
+        <h2>At Dell</h2>
+        <p>Senior Principal Engineer & Generative AI Architect, building AI Acceleration Platform solutions. AI Hackathon winner (2017), Quality Hackout (2018), Cloud IT Hackathon (2016).</p>
+
+        <h2>Why this site</h2>
+        <p>There is a lot of AI content out there. Most of it is surface-level or written by people who haven't shipped real agents. Everything here is grounded in actual implementation experience and honest learnings.</p>
       </div>
-      <div class="about-body prose">
-        <h2>My Story</h2>
-        <p>I'm a firm believer in social learning. I owe my dev career to all the tech content creators I learned from — agentexpert.io is my contribution back to the community.</p>
-        <p>After 15+ years of building distributed systems, automation tools, and designing software architecture, I was tasked to lead a GenAI team at Dell. That forced me to step out of my comfort zone and adapt — just as I always have. Within 3 months I had transitioned into an AI Engineer, and I've been deep in the agent-building world ever since.</p>
-        <h2>What I Do</h2>
-        <p>At Dell Technologies, I work as a Senior Principal Engineer & Generative AI Architect, building AI Acceleration Platform solutions. I've won the Dell AI Hackathon (2017), Quality Hackout (2018), and Cloud IT Hackathon (2016).</p>
-        <p>Outside Dell, I run the <strong>Adaptive Engineer</strong> brand — a YouTube channel, Substack newsletter, and blog focused on helping software engineers adapt to the AI era.</p>
-        <h2>Why agentexpert.io</h2>
-        <p>There's a lot of AI content out there. Most of it is surface-level, hype-driven, or written by people who haven't shipped real agents. This site is different — everything here is grounded in actual implementation experience, real production challenges, and honest learnings.</p>
-        <p>My goal: give you the structured knowledge to go from curious to confident in building AI agents.</p>
+
+      <div class="links">
+        <p class="section-label">Find me elsewhere</p>
+        <a href="https://youtube.com/@adaptiveengineer" target="_blank">YouTube — Adaptive Engineer ↗</a>
+        <a href="https://newsletter.adaptiveengineer.com" target="_blank">Newsletter — The Adaptive Engineer ↗</a>
+        <a href="https://zahere.com" target="_blank">Blog — zahere.com ↗</a>
+        <a href="https://twitter.com/zahiruddin_t" target="_blank">Twitter — @zahiruddin_t ↗</a>
+        <a href="https://linkedin.com/in/zahiruddin-tavargere" target="_blank">LinkedIn ↗</a>
       </div>
-      <div class="links-grid">
-        <a href="https://youtube.com/@adaptiveengineer" target="_blank" class="profile-link">▶ YouTube — Adaptive Engineer</a>
-        <a href="https://newsletter.adaptiveengineer.com" target="_blank" class="profile-link">✉ Newsletter — The Adaptive Engineer</a>
-        <a href="https://zahere.com" target="_blank" class="profile-link">✍ Blog — zahere.com</a>
-        <a href="https://twitter.com/zahiruddin_t" target="_blank" class="profile-link">𝕏 Twitter — @zahiruddin_t</a>
-        <a href="https://linkedin.com/in/zahiruddin-tavargere" target="_blank" class="profile-link">in LinkedIn</a>
-      </div>
-    </div>
+    </section>
   </div>
 </Layout>
 
 <style>
-  .about-page { max-width: 800px; margin: 0 auto; padding: 5rem 0; }
-  .about-header { margin-bottom: 3rem; }
-  .chip { display: inline-block; padding: 0.25rem 0.75rem; background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.2); color: var(--accent); border-radius: 4px; font-size: 0.75rem; font-family: var(--font-mono); margin-bottom: 1rem; }
-  h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 0.5rem; }
-  .title-line { color: var(--muted); font-size: 1rem; }
-  .about-body { margin-bottom: 3rem; }
-  .links-grid { display: flex; flex-direction: column; gap: 0.75rem; }
-  .profile-link { display: block; padding: 1rem 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; text-decoration: none; color: var(--text); font-weight: 600; transition: border-color 0.2s, color 0.2s; }
-  .profile-link:hover { border-color: var(--accent); color: var(--accent); }
+  .about-page { max-width: 600px; padding: 4rem 0 5rem; }
+  h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 0.35rem; }
+  .sub { font-size: 0.875rem; color: var(--muted); margin-bottom: 3rem; border-bottom: 1px solid var(--border); padding-bottom: 2rem; }
+  .links { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.6rem; }
+  .section-label { font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.5rem; }
+  .links a { font-size: 0.875rem; color: var(--muted); width: fit-content; transition: color 0.15s; }
+  .links a:hover { color: var(--text); }
 </style>
