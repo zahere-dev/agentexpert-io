@@ -1,18 +1,19 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 ---
-<Layout title="Tips & Tricks" description="Bite-sized AI agent tips from real-world deployments.">
+<Layout title="Tips & Tricks" description="Bite-sized AI agent tips.">
   <div class="container">
-    <div class="section-header">
-      <h1>💡 Tips & Tricks</h1>
-      <p>Bite-sized, battle-tested insights from building AI agents at scale. No fluff — just things that actually matter.</p>
-    </div>
-    <div class="coming-soon">
-      <p>📝 Tips are being added. <a href="https://newsletter.adaptiveengineer.com" target="_blank">Subscribe to the newsletter</a> to get notified when new tips drop.</p>
-    </div>
+    <section class="page-header">
+      <h1>Tips & tricks</h1>
+      <p>Bite-sized, battle-tested insights from building AI agents at scale.</p>
+    </section>
+    <p class="cta-note">Tips coming soon. Subscribe to <a href="https://newsletter.adaptiveengineer.com" target="_blank">The Adaptive Engineer</a> to get notified.</p>
   </div>
 </Layout>
 <style>
-  .coming-soon { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 3rem; text-align: center; color: var(--muted); margin-top: 2rem; }
-  .coming-soon a { color: var(--accent); }
+  .page-header { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+  .page-header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .page-header p { font-size: 0.9rem; color: var(--muted); }
+  .cta-note { font-size: 0.82rem; color: var(--muted); }
+  .cta-note a { border-bottom: 1px solid var(--border); color: var(--text); }
 </style>
