@@ -1,18 +1,19 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 ---
-<Layout title="Case Studies" description="Real AI agent implementations — problem, architecture, and learnings.">
+<Layout title="Case Studies" description="Real AI agent implementations, broken down.">
   <div class="container">
-    <div class="section-header">
-      <h1>📚 Case Studies</h1>
-      <p>Real-world agent implementations broken down: problem → architecture → results → honest learnings.</p>
-    </div>
-    <div class="coming-soon">
-      <p>📝 Case studies are being added. <a href="https://newsletter.adaptiveengineer.com" target="_blank">Subscribe to the newsletter</a> to get notified.</p>
-    </div>
+    <section class="page-header">
+      <h1>Case studies</h1>
+      <p>Real-world implementations: problem → architecture → results → honest learnings.</p>
+    </section>
+    <p class="cta-note">Case studies coming soon. Subscribe to <a href="https://newsletter.adaptiveengineer.com" target="_blank">The Adaptive Engineer</a> to get notified.</p>
   </div>
 </Layout>
 <style>
-  .coming-soon { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 3rem; text-align: center; color: var(--muted); margin-top: 2rem; }
-  .coming-soon a { color: var(--accent); }
+  .page-header { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+  .page-header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .page-header p { font-size: 0.9rem; color: var(--muted); }
+  .cta-note { font-size: 0.82rem; color: var(--muted); }
+  .cta-note a { border-bottom: 1px solid var(--border); color: var(--text); }
 </style>
