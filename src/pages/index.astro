@@ -1,0 +1,116 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Home — The Definitive AI Agent Resource">
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="badge">Built by a Practitioner · Not a Content Farm</div>
+      <h1>The Definitive Resource for<br /><span class="accent">Building AI Agents</span></h1>
+      <p>Roadmaps, design patterns, tips & case studies — curated by Zahiruddin Tavargere, Senior GenAI Architect @ Dell with 15+ years in software engineering.</p>
+      <div class="hero-cta">
+        <a href="/roadmaps" class="btn-primary">Start with Roadmaps</a>
+        <a href="/about" class="btn-ghost">About the Author →</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="num">4</span><span class="label">Learning Paths</span></div>
+        <div class="stat"><span class="num">15+</span><span class="label">Agent Patterns</span></div>
+        <div class="stat"><span class="num">10+</span><span class="label">Case Studies</span></div>
+        <div class="stat"><span class="num">15+</span><span class="label">Yrs Experience</span></div>
+      </div>
+    </div>
+    <div class="hero-grid-bg"></div>
+  </section>
+
+  <section class="sections container">
+    <div class="section-grid">
+      <a href="/roadmaps" class="section-card">
+        <div class="icon">🗺️</div>
+        <h3>Roadmaps</h3>
+        <p>Structured learning paths from zero to production-grade AI agents. Know exactly what to learn next.</p>
+        <span class="arrow">→</span>
+      </a>
+      <a href="/patterns" class="section-card">
+        <div class="icon">🧩</div>
+        <h3>Patterns</h3>
+        <p>Proven design patterns for tool use, memory, multi-agent orchestration, RAG, MCP and more.</p>
+        <span class="arrow">→</span>
+      </a>
+      <a href="/tips" class="section-card">
+        <div class="icon">💡</div>
+        <h3>Tips & Tricks</h3>
+        <p>Bite-sized, battle-tested tips from real-world agent deployments at scale.</p>
+        <span class="arrow">→</span>
+      </a>
+      <a href="/case-studies" class="section-card">
+        <div class="icon">📚</div>
+        <h3>Case Studies</h3>
+        <p>Real implementations broken down: problem → architecture → results → learnings.</p>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="about-strip container">
+    <div class="about-strip-inner">
+      <div class="about-text">
+        <div class="chip">The Expert Behind This</div>
+        <h2>From SE to GenAI Architect</h2>
+        <p>I'm Zahiruddin Tavargere (Zahere). After 15+ years building distributed systems, I transitioned into AI engineering and now lead GenAI initiatives at Dell Technologies. I built agentexpert.io to give back — the same way the community gave to me.</p>
+        <a href="/about" class="btn-ghost">Read my story →</a>
+      </div>
+      <div class="about-links">
+        <a href="https://youtube.com/@adaptiveengineer" target="_blank" class="link-card">
+          <span class="lc-icon">▶</span>
+          <div><strong>YouTube</strong><br /><small>Adaptive Engineer — AI agent tutorials</small></div>
+        </a>
+        <a href="https://newsletter.adaptiveengineer.com" target="_blank" class="link-card">
+          <span class="lc-icon">✉</span>
+          <div><strong>Newsletter</strong><br /><small>The Adaptive Engineer on Substack</small></div>
+        </a>
+        <a href="https://zahere.com" target="_blank" class="link-card">
+          <span class="lc-icon">✍</span>
+          <div><strong>Blog</strong><br /><small>zahere.com · Technical deep-dives</small></div>
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .hero { position: relative; min-height: 88vh; display: flex; align-items: center; overflow: hidden; }
+  .hero-inner { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
+  .hero-grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px); background-size: 60px 60px; }
+  .badge { display: inline-block; padding: 0.35rem 1rem; border: 1px solid rgba(0,255,136,0.3); color: var(--accent); border-radius: 999px; font-size: 0.78rem; font-family: var(--font-mono); margin-bottom: 1.5rem; letter-spacing: 0.05em; }
+  h1 { font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 800; line-height: 1.08; margin-bottom: 1.5rem; }
+  .accent { color: var(--accent); }
+  .hero-inner > p { font-size: 1.1rem; color: var(--muted); max-width: 580px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-cta { display: flex; gap: 1rem; margin-bottom: 4rem; flex-wrap: wrap; }
+  .btn-primary { padding: 0.85rem 2rem; background: var(--accent); color: #000; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.95rem; transition: opacity 0.2s; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-ghost { padding: 0.85rem 2rem; border: 1px solid var(--border); color: var(--text); border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: border-color 0.2s, color 0.2s; }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .hero-stats { display: flex; gap: 3rem; flex-wrap: wrap; }
+  .stat { display: flex; flex-direction: column; gap: 0.1rem; }
+  .num { font-size: 2rem; font-weight: 800; color: var(--accent); font-family: var(--font-mono); line-height: 1; }
+  .label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .sections { padding: 5rem 2rem; }
+  .section-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
+  .section-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; text-decoration: none; color: var(--text); transition: border-color 0.2s, transform 0.2s; display: flex; flex-direction: column; gap: 0.5rem; }
+  .section-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+  .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .section-card h3 { font-size: 1.25rem; font-weight: 700; }
+  .section-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; flex: 1; }
+  .arrow { color: var(--accent); font-size: 1.2rem; margin-top: 0.5rem; }
+  .about-strip { padding: 0 2rem 4rem; }
+  .about-strip-inner { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 3rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  .chip { display: inline-block; padding: 0.25rem 0.75rem; background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.2); color: var(--accent); border-radius: 4px; font-size: 0.75rem; font-family: var(--font-mono); margin-bottom: 1rem; }
+  .about-text h2 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; }
+  .about-text p { color: var(--muted); line-height: 1.75; margin-bottom: 1.5rem; }
+  .about-links { display: flex; flex-direction: column; gap: 1rem; }
+  .link-card { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; text-decoration: none; color: var(--text); transition: border-color 0.2s; }
+  .link-card:hover { border-color: var(--accent); }
+  .lc-icon { width: 2.5rem; height: 2.5rem; display: grid; place-items: center; background: rgba(0,255,136,0.1); border-radius: 8px; color: var(--accent); font-size: 1rem; flex-shrink: 0; }
+  .link-card strong { display: block; font-size: 0.9rem; }
+  .link-card small { color: var(--muted); font-size: 0.78rem; }
+  @media (max-width: 768px) { .about-strip-inner { grid-template-columns: 1fr; gap: 2rem; } }
+</style>
