@@ -6,5 +6,5 @@ import keystatic from '@keystatic/astro';
 export default defineConfig({
   integrations: [react(), keystatic()],
   adapter: node({ mode: 'passthrough' }),
-  output: 'hybrid',
+  output: 'server',
 });
