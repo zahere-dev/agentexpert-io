@@ -23,7 +23,6 @@ const asset = slug ? await getEntry('assets', slug) : undefined;
           assetId={asset.id}
           title={asset.data.title}
           description={asset.data.description}
-          assetType={asset.data.type}
         />
       </>
     ) : (

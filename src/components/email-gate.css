@@ -50,17 +50,4 @@
 .gate-hidden { display: none; }
 
 .gate-result { text-align: center; }
-.gate-result-note { font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem; }
-.gate-result-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font);
-  font-size: 0.9rem;
-  font-weight: 500;
-  padding: 0.7rem 1.5rem;
-  border-radius: 8px;
-  background: var(--text);
-  color: var(--bg);
-}
-.gate-result-link:hover { opacity: 0.85; }
+.gate-result-note { font-size: 0.95rem; color: var(--text); font-weight: 500; }

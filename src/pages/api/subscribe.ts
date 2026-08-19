@@ -67,13 +67,15 @@ export const POST: APIRoute = async ({ request }) => {
         text: deliveryEmailText(emailInput),
       });
     } catch (err) {
-      // The on-page link still works even if the email fails to send.
       console.error('Resend email send failed:', err);
+      return new Response(JSON.stringify({ error: 'Could not send the email' }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
   }
 
-  return new Response(
-    JSON.stringify({ url: asset.data.url, type: asset.data.type, title: asset.data.title }),
-    { headers: { 'Content-Type': 'application/json' } }
-  );
+  return new Response(JSON.stringify({ ok: true }), {
+    headers: { 'Content-Type': 'application/json' },
+  });
 };

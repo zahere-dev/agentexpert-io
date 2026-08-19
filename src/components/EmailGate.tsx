@@ -1,34 +1,17 @@
 import { useState, type FormEvent } from "react";
 import "./email-gate.css";
 
-type AssetType = "github" | "zip" | "pdf" | "ppt" | "link";
-
 interface EmailGateProps {
   assetId: string;
   title: string;
   description: string;
-  assetType: AssetType;
 }
 
-interface UnlockResult {
-  url: string;
-  type: AssetType;
-  title: string;
-}
-
-const ACTION_LABEL: Record<AssetType, string> = {
-  github: "View on GitHub",
-  zip: "Download ZIP",
-  pdf: "Download PDF",
-  ppt: "Download slides",
-  link: "Open link",
-};
-
-export default function EmailGate({ assetId, title, description, assetType }: EmailGateProps) {
+export default function EmailGate({ assetId, title, description }: EmailGateProps) {
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState(""); // honeypot
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
-  const [result, setResult] = useState<UnlockResult | null>(null);
+  const [sent, setSent] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleSubmit(e: FormEvent) {
@@ -48,8 +31,7 @@ export default function EmailGate({ assetId, title, description, assetType }: Em
         throw new Error(data.error ?? "Something went wrong");
       }
 
-      const data: UnlockResult = await res.json();
-      setResult(data);
+      setSent(true);
       setStatus("idle");
     } catch (err) {
       setStatus("error");
@@ -57,13 +39,10 @@ export default function EmailGate({ assetId, title, description, assetType }: Em
     }
   }
 
-  if (result) {
+  if (sent) {
     return (
       <div className="gate gate-result">
-        <p className="gate-result-note">Thanks! Your download is ready.</p>
-        <a href={result.url} target="_blank" rel="noopener noreferrer" className="gate-result-link">
-          {ACTION_LABEL[result.type]}
-        </a>
+        <p className="gate-result-note">Please check your inbox for the link.</p>
       </div>
     );
   }
@@ -93,7 +72,7 @@ export default function EmailGate({ assetId, title, description, assetType }: Em
           className="gate-input"
         />
         <button type="submit" disabled={status === "loading"} className="gate-button">
-          {status === "loading" ? "Unlocking..." : ACTION_LABEL[assetType]}
+          {status === "loading" ? "Sending..." : "Send me the link"}
         </button>
       </form>
 
