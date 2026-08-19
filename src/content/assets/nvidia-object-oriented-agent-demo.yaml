@@ -1,0 +1,6 @@
+title: NVIDIA Object-Oriented Agents Demo
+description: Standalone demos for NVIDIA's NOOA framework, where agents are Python classes and methods act as tools without a JSON tool-schema round trip.
+type: github
+url: https://github.com/zahere-dev/nvidia-object-oriented-agent-demo
+publishedAt: '2026-08-19'
+image: ./img/nooa.png
