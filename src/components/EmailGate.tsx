@@ -87,7 +87,7 @@ export default function EmailGate({ assetId, title, description, assetType }: Em
         <input
           type="email"
           required
-          placeholder="you@company.com"
+          placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="gate-input"
