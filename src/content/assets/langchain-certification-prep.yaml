@@ -1,5 +1,6 @@
 title: LangChain Certification Prep
-description: Hands-on prep for the LangChain/LangGraph certification — taught by building one real project end-to-end, Aria, an AI executive assistant.
+description: Hands-on prep for the LangChain/LangGraph certification — taught by building one real project end-to-end, Aria, an AI executive assistant. This is repo takes project-based learning for LangChain foundation.
 type: github
 url: https://github.com/zahere-dev/langchain-certification-prep-foundation
 publishedAt: '2026-08-19'
+image: ./img/langchain_foundation.png

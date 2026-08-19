@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import EmailGate from '../../components/EmailGate.tsx';
 import { getEntry } from 'astro:content';
+import { Image } from 'astro:assets';
 
 export const prerender = false;
 
@@ -11,13 +12,20 @@ const asset = slug ? await getEntry('assets', slug) : undefined;
 <Layout title={asset ? asset.data.title : 'Not found'} description={asset?.data.description}>
   <div class="container">
     {asset ? (
-      <EmailGate
-        client:load
-        assetId={asset.id}
-        title={asset.data.title}
-        description={asset.data.description}
-        assetType={asset.data.type}
-      />
+      <>
+        {asset.data.image && (
+          <div class="preview-image">
+            <Image src={asset.data.image} alt={asset.data.title} width={960} height={540} />
+          </div>
+        )}
+        <EmailGate
+          client:load
+          assetId={asset.id}
+          title={asset.data.title}
+          description={asset.data.description}
+          assetType={asset.data.type}
+        />
+      </>
     ) : (
       <p class="not-found">Nothing here. <a href="/">Back to the homepage →</a></p>
     )}
@@ -34,6 +42,9 @@ const asset = slug ? await getEntry('assets', slug) : undefined;
 
 <style>
   .container { max-width: 480px; padding-top: 6rem; padding-bottom: 3rem; }
+
+  .preview-image { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 1.25rem; }
+  .preview-image :global(img) { display: block; width: 100%; height: auto; }
   .not-found { font-size: 0.9rem; color: var(--muted); text-align: center; }
   .not-found a { border-bottom: 1px solid var(--border); }
   .not-found a:hover { color: var(--text); border-color: var(--text); }

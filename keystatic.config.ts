@@ -31,6 +31,11 @@ export default config({
         }),
         url: fields.text({ label: 'Asset URL (file link or GitHub repo) — revealed only after signup' }),
         publishedAt: fields.date({ label: 'Published At' }),
+        image: fields.image({
+          label: 'Preview Image',
+          directory: 'src/content/assets/img',
+          publicPath: '../img/',
+        }),
       },
     }),
     roadmaps: collection({
