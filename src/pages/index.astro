@@ -30,6 +30,10 @@ import AgentSimulator from '../components/AgentSimulator.tsx';
 
     <footer class="foot">
       <span>By <a href="https://zahere.com" target="_blank">Zahiruddin Tavargere</a> — Senior GenAI Architect @ Dell</span>
+      <div class="foot-links">
+        <a href="https://www.youtube.com/@adaptiveengineer" target="_blank" rel="noopener noreferrer">YouTube</a>
+        <a href="https://newsletter.adaptiveengineer.com/" target="_blank" rel="noopener noreferrer">Newsletter</a>
+      </div>
     </footer>
 
   </div>
@@ -58,9 +62,10 @@ import AgentSimulator from '../components/AgentSimulator.tsx';
   .cta-link { display: inline-block; font-size: 0.88rem; font-weight: 500; border-bottom: 1px solid var(--text); }
   .cta-link:hover { opacity: 0.7; }
 
-  .foot { font-size: 0.78rem; color: var(--muted); text-align: center; }
+  .foot { font-size: 0.78rem; color: var(--muted); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
   .foot a { border-bottom: 1px solid var(--border); }
   .foot a:hover { color: var(--text); border-color: var(--text); }
+  .foot-links { display: flex; gap: 1.25rem; }
 
   @media (max-width: 560px) {
     h1 { font-size: 1.65rem; }

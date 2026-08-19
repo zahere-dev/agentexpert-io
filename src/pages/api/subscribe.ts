@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getEntry } from 'astro:content';
 import { z } from 'zod';
 import { Resend } from 'resend';
+import { deliveryEmailHtml, deliveryEmailText } from '../../lib/deliveryEmail';
 
 export const prerender = false;
 
@@ -50,16 +51,20 @@ export const POST: APIRoute = async ({ request }) => {
       }
     }
 
+    const emailInput = {
+      title: asset.data.title,
+      description: asset.data.description,
+      url: asset.data.url,
+      type: asset.data.type,
+    };
+
     try {
       await resend.emails.send({
         from: `agentexpert.io <${fromEmail}>`,
         to: email,
         subject: `Your download: ${asset.data.title}`,
-        html: `
-          <p>Here's the link you asked for:</p>
-          <p><a href="${asset.data.url}">${asset.data.title}</a></p>
-          <p style="color:#6b7280;font-size:13px">— agentexpert.io</p>
-        `,
+        html: deliveryEmailHtml(emailInput),
+        text: deliveryEmailText(emailInput),
       });
     } catch (err) {
       // The on-page link still works even if the email fails to send.
