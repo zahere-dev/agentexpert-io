@@ -18,16 +18,48 @@ interface CategoryScore {
   percent: number;
 }
 
+interface SessionQuestion {
+  id: string;
+  category: QuizCategory;
+  question: string;
+  options: string[];
+  correctIndex: number;
+}
+
+function shuffle<T>(items: T[]): T[] {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function buildSessionQuestions(): SessionQuestion[] {
+  return QUIZ_QUESTIONS.map((q) => {
+    const order = shuffle(q.options.map((_, i) => i));
+    return {
+      id: q.id,
+      category: q.category,
+      question: q.question,
+      options: order.map((i) => q.options[i]),
+      correctIndex: order.indexOf(q.correctIndex),
+    };
+  });
+}
+
 export default function AgentQuiz() {
   const [phase, setPhase] = useState<Phase>("intro");
+  const [sessionQuestions, setSessionQuestions] = useState<SessionQuestion[]>([]);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [selected, setSelected] = useState<number | null>(null);
 
-  const question = QUIZ_QUESTIONS[index];
+  const question = sessionQuestions[index];
   const total = QUIZ_QUESTIONS.length;
 
   function start() {
+    setSessionQuestions(buildSessionQuestions());
     setPhase("quiz");
     setIndex(0);
     setAnswers({});
@@ -51,7 +83,7 @@ export default function AgentQuiz() {
   }
 
   const categoryScores: CategoryScore[] = CATEGORIES.map((category) => {
-    const questions = QUIZ_QUESTIONS.filter((q) => q.category === category);
+    const questions = sessionQuestions.filter((q) => q.category === category);
     const correct = questions.filter((q) => answers[q.id] === q.correctIndex).length;
     return {
       category,
