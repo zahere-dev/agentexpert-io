@@ -1,31 +1,22 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import AgentSimulator from '../components/AgentSimulator.tsx';
+import AgentQuiz from '../components/AgentQuiz.tsx';
 ---
-<Layout title="agentexpert.io — Think Like an Agent">
+<Layout title="agentexpert.io — Where are you in your agent-building journey?">
   <div class="container">
 
     <section class="hero">
       <p class="eyebrow">agentexpert.io</p>
-      <h1>Think like an agent.</h1>
+      <h1>Where are you in your agent-building journey?</h1>
       <p class="sub">
-        Most agent demos hide the hard part: deciding what to do next. Play the
-        agent's brain for one mission — pick each step, watch what breaks, see
-        how you score.
+        20 questions across Knowledge, Application, Analysis, and Creativity.
+        Answer honestly — you'll get a level, a per-category breakdown, and
+        exactly what to work on next.
       </p>
     </section>
 
     <section class="sim-wrap">
-      <AgentSimulator client:load />
-    </section>
-
-    <section class="cta" id="download-cta">
-      <p class="cta-label">Go further</p>
-      <p class="cta-text">
-        The playbook behind this loop — patterns, guardrails, and the mistakes
-        that don't show up in a demo.
-      </p>
-      <a href="/get/langchain-certification-prep" class="cta-link">Get the LangChain Certification Prep kit →</a>
+      <AgentQuiz client:load />
     </section>
 
     <footer class="foot">
@@ -48,19 +39,6 @@ import AgentSimulator from '../components/AgentSimulator.tsx';
   .sub { font-size: 0.95rem; color: var(--muted); max-width: 520px; }
 
   .sim-wrap { margin-bottom: 3rem; }
-
-  .cta {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 3rem;
-    text-align: center;
-  }
-  .cta-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.4rem; }
-  .cta-text { font-size: 0.85rem; color: var(--muted); max-width: 420px; margin: 0 auto 1rem; line-height: 1.6; }
-  .cta-link { display: inline-block; font-size: 0.88rem; font-weight: 500; border-bottom: 1px solid var(--text); }
-  .cta-link:hover { opacity: 0.7; }
 
   .foot { font-size: 0.78rem; color: var(--muted); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
   .foot a { border-bottom: 1px solid var(--border); }
