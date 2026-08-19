@@ -1,0 +1,32 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import EmailGate from '../../components/EmailGate.tsx';
+import { getEntry } from 'astro:content';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const asset = slug ? await getEntry('assets', slug) : undefined;
+---
+<Layout title={asset ? asset.data.title : 'Not found'} description={asset?.data.description}>
+  <div class="container">
+    {asset ? (
+      <EmailGate
+        client:load
+        assetId={asset.id}
+        title={asset.data.title}
+        description={asset.data.description}
+        assetType={asset.data.type}
+      />
+    ) : (
+      <p class="not-found">Nothing here. <a href="/">Back to the homepage →</a></p>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .container { max-width: 480px; padding-top: 6rem; padding-bottom: 6rem; }
+  .not-found { font-size: 0.9rem; color: var(--muted); text-align: center; }
+  .not-found a { border-bottom: 1px solid var(--border); }
+  .not-found a:hover { color: var(--text); border-color: var(--text); }
+</style>

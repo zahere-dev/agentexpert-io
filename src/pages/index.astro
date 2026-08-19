@@ -1,75 +1,69 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import AgentSimulator from '../components/AgentSimulator.tsx';
 ---
-<Layout title="agentexpert.io — Build Better AI Agents">
+<Layout title="agentexpert.io — Think Like an Agent">
   <div class="container">
 
     <section class="hero">
-      <h1>Build better AI agents.</h1>
-      <p>Practical roadmaps, design patterns, tips and case studies — curated by a practitioner. No fluff, no hype.</p>
-      <div class="hero-by">
-        <span>By <a href="/about">Zahiruddin Tavargere</a> — Senior GenAI Architect @ Dell</span>
-      </div>
+      <p class="eyebrow">agentexpert.io</p>
+      <h1>Think like an agent.</h1>
+      <p class="sub">
+        Most agent demos hide the hard part: deciding what to do next. Play the
+        agent's brain for one mission — pick each step, watch what breaks, see
+        how you score.
+      </p>
     </section>
 
-    <section class="nav-cards">
-      <a href="/roadmaps" class="nav-card">
-        <p class="nav-card-title">Roadmaps</p>
-        <p class="nav-card-desc">Structured learning paths from your first agent to production systems.</p>
-      </a>
-      <a href="/patterns" class="nav-card">
-        <p class="nav-card-title">Patterns</p>
-        <p class="nav-card-desc">Proven design patterns for tool use, memory, RAG, MCP and multi-agent systems.</p>
-      </a>
-      <a href="/tips" class="nav-card">
-        <p class="nav-card-title">Tips & tricks</p>
-        <p class="nav-card-desc">Bite-sized insights from real-world agent deployments at scale.</p>
-      </a>
-      <a href="/case-studies" class="nav-card">
-        <p class="nav-card-title">Case studies</p>
-        <p class="nav-card-desc">Real implementations broken down: problem, architecture, and honest learnings.</p>
-      </a>
+    <section class="sim-wrap">
+      <AgentSimulator client:load />
     </section>
 
-    <section class="about-strip">
-      <p>A note from the author — I'm a firm believer in social learning. I owe my career to the tech community. This site is my contribution back. Everything here comes from building real agents, not from reading about them. <a href="/about">More about me →</a></p>
+    <section class="cta" id="download-cta">
+      <p class="cta-label">Go further</p>
+      <p class="cta-text">
+        The playbook behind this loop — patterns, guardrails, and the mistakes
+        that don't show up in a demo.
+      </p>
+      <a href="/get/langchain-certification-prep" class="cta-link">Get the LangChain Certification Prep kit →</a>
     </section>
 
-    <section class="channels">
-      <p class="section-label">Also find me on</p>
-      <div class="channel-list">
-        <a href="https://youtube.com/@adaptiveengineer" target="_blank" class="channel-link">YouTube — Adaptive Engineer ↗</a>
-        <a href="https://newsletter.adaptiveengineer.com" target="_blank" class="channel-link">Newsletter — The Adaptive Engineer ↗</a>
-        <a href="https://zahere.com" target="_blank" class="channel-link">Blog — zahere.com ↗</a>
-      </div>
-    </section>
+    <footer class="foot">
+      <span>By <a href="https://zahere.com" target="_blank">Zahiruddin Tavargere</a> — Senior GenAI Architect @ Dell</span>
+    </footer>
 
   </div>
 </Layout>
 
 <style>
-  .hero { padding: 5rem 0 3.5rem; border-bottom: 1px solid var(--border); }
-  .hero h1 { font-size: 2rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 1rem; line-height: 1.25; }
-  .hero p { font-size: 1rem; color: var(--muted); max-width: 520px; margin-bottom: 1.25rem; }
-  .hero-by { font-size: 0.8rem; color: var(--muted); }
-  .hero-by a { border-bottom: 1px solid var(--border); }
-  .hero-by a:hover { color: var(--text); border-color: var(--text); }
+  .container { max-width: 640px; padding-top: 4.5rem; padding-bottom: 4rem; }
 
-  .nav-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin: 3rem 0; border-radius: 10px; overflow: hidden; }
-  .nav-card { background: var(--bg); padding: 1.5rem; transition: background 0.15s; }
-  .nav-card:hover { background: var(--surface); }
-  .nav-card-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.4rem; }
-  .nav-card-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+  .hero { margin-bottom: 2.5rem; }
+  .eyebrow { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; }
+  h1 { font-size: 2.1rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 0.85rem; }
+  .sub { font-size: 0.95rem; color: var(--muted); max-width: 520px; }
 
-  .about-strip { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 3rem; }
-  .about-strip p { font-size: 0.875rem; color: var(--muted); line-height: 1.65; }
-  .about-strip a { border-bottom: 1px solid var(--border); }
-  .about-strip a:hover { color: var(--text); border-color: var(--text); }
+  .sim-wrap { margin-bottom: 3rem; }
 
-  .section-label { font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.75rem; }
-  .channel-list { display: flex; flex-direction: column; gap: 0.5rem; }
-  .channel-link { font-size: 0.875rem; color: var(--muted); border-bottom: 1px solid transparent; width: fit-content; transition: color 0.15s; }
-  .channel-link:hover { color: var(--text); }
+  .cta {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 3rem;
+    text-align: center;
+  }
+  .cta-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.4rem; }
+  .cta-text { font-size: 0.85rem; color: var(--muted); max-width: 420px; margin: 0 auto 1rem; line-height: 1.6; }
+  .cta-link { display: inline-block; font-size: 0.88rem; font-weight: 500; border-bottom: 1px solid var(--text); }
+  .cta-link:hover { opacity: 0.7; }
 
-  @media (max-width: 560px) { .nav-cards { grid-template-columns: 1fr; } .hero h1 { font-size: 1.6rem; } }
+  .foot { font-size: 0.78rem; color: var(--muted); text-align: center; }
+  .foot a { border-bottom: 1px solid var(--border); }
+  .foot a:hover { color: var(--text); border-color: var(--text); }
+
+  @media (max-width: 560px) {
+    h1 { font-size: 1.65rem; }
+    .container { padding-top: 3rem; }
+  }
 </style>

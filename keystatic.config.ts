@@ -5,10 +5,34 @@ export default config({
   ui: {
     navigation: {
       'Content': ['roadmaps', 'patterns', 'tips', 'caseStudies'],
+      'Downloads': ['assets'],
       'Site': ['siteSettings'],
     },
   },
   collections: {
+    assets: collection({
+      label: 'Gated Downloads',
+      slugField: 'title',
+      path: 'src/content/assets/*',
+      format: { data: 'yaml' },
+      schema: {
+        title: fields.slug({ name: { label: 'Title' } }),
+        description: fields.text({ label: 'Description', multiline: true }),
+        type: fields.select({
+          label: 'Asset Type',
+          options: [
+            { label: 'GitHub repo', value: 'github' },
+            { label: 'ZIP file', value: 'zip' },
+            { label: 'PDF', value: 'pdf' },
+            { label: 'Slides (PPT)', value: 'ppt' },
+            { label: 'Other link', value: 'link' },
+          ],
+          defaultValue: 'link',
+        }),
+        url: fields.text({ label: 'Asset URL (file link or GitHub repo) — revealed only after signup' }),
+        publishedAt: fields.date({ label: 'Published At' }),
+      },
+    }),
     roadmaps: collection({
       label: 'Roadmaps',
       slugField: 'title',
