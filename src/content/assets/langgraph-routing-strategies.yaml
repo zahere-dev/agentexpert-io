@@ -1,0 +1,5 @@
+title: LangGraph Routing Strategies
+description: Four routing strategies for LangGraph agents — LLM-based, embedding-based, rule-based, and ML model-based — compared side by side on a realistic customer service use case.
+type: github
+url: https://github.com/zahere-dev/agentexpert-labs/tree/main/core_concepts/routing
+publishedAt: '2026-08-19'
