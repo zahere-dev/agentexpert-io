@@ -35,15 +35,35 @@ export const POST: APIRoute = async ({ request }) => {
 
   const apiKey = import.meta.env.RESEND_API_KEY;
   const audienceId = import.meta.env.RESEND_AUDIENCE_ID;
+  const fromEmail = import.meta.env.RESEND_FROM_EMAIL || 'noreply@agentexpert.io';
 
-  if (apiKey && audienceId) {
+  if (apiKey) {
+    const resend = new Resend(apiKey);
+
+    if (audienceId) {
+      try {
+        await resend.contacts.create({ email, audienceId, unsubscribed: false });
+      } catch (err) {
+        // A duplicate contact or a transient Resend error shouldn't block
+        // delivery of an asset the visitor already asked for.
+        console.error('Resend contact creation failed:', err);
+      }
+    }
+
     try {
-      const resend = new Resend(apiKey);
-      await resend.contacts.create({ email, audienceId, unsubscribed: false });
+      await resend.emails.send({
+        from: `agentexpert.io <${fromEmail}>`,
+        to: email,
+        subject: `Your download: ${asset.data.title}`,
+        html: `
+          <p>Here's the link you asked for:</p>
+          <p><a href="${asset.data.url}">${asset.data.title}</a></p>
+          <p style="color:#6b7280;font-size:13px">— agentexpert.io</p>
+        `,
+      });
     } catch (err) {
-      // A duplicate contact or a transient Resend error shouldn't block
-      // delivery of an asset the visitor already asked for.
-      console.error('Resend contact creation failed:', err);
+      // The on-page link still works even if the email fails to send.
+      console.error('Resend email send failed:', err);
     }
   }
 
