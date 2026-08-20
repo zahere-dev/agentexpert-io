@@ -6,6 +6,7 @@ import { quizResultEmailHtml, quizResultEmailText } from '../../lib/quizResultEm
 export const prerender = false;
 
 const bodySchema = z.object({
+  name: z.string().min(1),
   email: z.string().email(),
   // Honeypot: real visitors never fill this in.
   company: z.string().max(0).optional(),
@@ -32,7 +33,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  const { email, level, overallPercent, categoryScores } = parsed.data;
+  const { name, email, level, overallPercent, categoryScores } = parsed.data;
 
   const apiKey = import.meta.env.RESEND_API_KEY;
   const audienceId = import.meta.env.RESEND_AUDIENCE_ID;
@@ -43,13 +44,13 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (audienceId) {
       try {
-        await resend.contacts.create({ email, audienceId, unsubscribed: false });
+        await resend.contacts.create({ email, audienceId, unsubscribed: false, firstName: name });
       } catch (err) {
         console.error('Resend contact creation failed:', err);
       }
     }
 
-    const emailInput = { level, overallPercent, categoryScores };
+    const emailInput = { name, level, overallPercent, categoryScores };
 
     try {
       await resend.emails.send({

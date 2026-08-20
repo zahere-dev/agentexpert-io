@@ -6,9 +6,18 @@ interface CategoryScore {
 }
 
 interface QuizResultEmailInput {
+  name: string;
   level: string;
   overallPercent: number;
   categoryScores: CategoryScore[];
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 const CATEGORY_COLOR: Record<string, string> = {
@@ -37,7 +46,8 @@ function barsHtml(categoryScores: CategoryScore[]): string {
     .join("");
 }
 
-export function quizResultEmailHtml({ level, overallPercent, categoryScores }: QuizResultEmailInput): string {
+export function quizResultEmailHtml({ name, level, overallPercent, categoryScores }: QuizResultEmailInput): string {
+  const safeName = escapeHtml(name);
   return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
   <tr>
@@ -46,7 +56,7 @@ export function quizResultEmailHtml({ level, overallPercent, categoryScores }: Q
         <tr>
           <td style="padding:32px 32px 24px;">
             <p style="margin:0 0 20px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;">agentexpert.io</p>
-            <h1 style="margin:0 0 6px;font-size:20px;line-height:1.3;font-weight:700;color:#111111;">Your level: ${level}</h1>
+            <h1 style="margin:0 0 6px;font-size:20px;line-height:1.3;font-weight:700;color:#111111;">Hi ${safeName}, your level: ${level}</h1>
             <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#4b5563;">
               You scored <strong style="color:#111111;">${overallPercent}%</strong> overall. Here's the breakdown by skill area:
             </p>
@@ -78,9 +88,9 @@ export function quizResultEmailHtml({ level, overallPercent, categoryScores }: Q
 `;
 }
 
-export function quizResultEmailText({ level, overallPercent, categoryScores }: QuizResultEmailInput): string {
+export function quizResultEmailText({ name, level, overallPercent, categoryScores }: QuizResultEmailInput): string {
   return [
-    `Your level: ${level}`,
+    `Hi ${name}, your level: ${level}`,
     `Overall score: ${overallPercent}%`,
     "",
     "Breakdown:",

@@ -54,6 +54,8 @@ export default function AgentQuiz() {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [selected, setSelected] = useState<number | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [leadName, setLeadName] = useState<string | null>(null);
 
   const question = sessionQuestions[index];
   const total = QUIZ_QUESTIONS.length;
@@ -64,6 +66,7 @@ export default function AgentQuiz() {
     setIndex(0);
     setAnswers({});
     setSelected(null);
+    setLeadName(null);
   }
 
   function choose(optionIndex: number) {
@@ -78,6 +81,7 @@ export default function AgentQuiz() {
         setSelected(null);
       } else {
         setPhase("results");
+        setShowModal(true);
       }
     }, 350);
   }
@@ -164,8 +168,9 @@ export default function AgentQuiz() {
 
   return (
     <div className="quiz">
-      <div className="quiz-results">
+      <div className={"quiz-results" + (showModal ? " quiz-results-blurred" : "")}>
         <div className="quiz-results-head">
+          {leadName && <p className="quiz-results-greeting">Nice work, {leadName}!</p>}
           <div
             className="quiz-ring"
             style={{
@@ -216,25 +221,41 @@ export default function AgentQuiz() {
           ))}
         </div>
 
-        <LeadForm level={level} overallPercent={overallPercent} categoryScores={categoryScores} />
       </div>
+
+      {showModal && (
+        <ResultModal
+          level={level}
+          overallPercent={overallPercent}
+          categoryScores={categoryScores}
+          onClose={() => setShowModal(false)}
+          onSubmitted={(name) => {
+            setLeadName(name);
+            setShowModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function LeadForm({
+function ResultModal({
   level,
   overallPercent,
   categoryScores,
+  onClose,
+  onSubmitted,
 }: {
   level: string;
   overallPercent: number;
   categoryScores: CategoryScore[];
+  onClose: () => void;
+  onSubmitted: (name: string) => void;
 }) {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
-  const [sent, setSent] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleSubmit(e: FormEvent) {
@@ -246,7 +267,7 @@ function LeadForm({
       const res = await fetch("/api/quiz-lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, company, level, overallPercent, categoryScores }),
+        body: JSON.stringify({ name, email, company, level, overallPercent, categoryScores }),
       });
 
       if (!res.ok) {
@@ -254,49 +275,55 @@ function LeadForm({
         throw new Error(data.error ?? "Something went wrong");
       }
 
-      setSent(true);
-      setStatus("idle");
+      onSubmitted(name);
     } catch (err) {
       setStatus("error");
       setErrorMessage(err instanceof Error ? err.message : "Something went wrong");
     }
   }
 
-  if (sent) {
-    return (
-      <div className="quiz-lead">
-        <p className="quiz-lead-sent">Please check your inbox — your results and next steps are on the way.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="quiz-lead">
-      <p className="quiz-lead-title">Want the roadmap that matches your level?</p>
-      <p className="quiz-lead-desc">Drop your email and I'll send your results plus what to learn next.</p>
-      <form onSubmit={handleSubmit} className="quiz-lead-form">
-        <input
-          type="text"
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
-          tabIndex={-1}
-          autoComplete="off"
-          className="quiz-hidden"
-          aria-hidden="true"
-        />
-        <input
-          type="email"
-          required
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="quiz-lead-input"
-        />
-        <button type="submit" disabled={status === "loading"} className="quiz-lead-btn">
-          {status === "loading" ? "Sending..." : "Learn more"}
+    <div className="quiz-modal-backdrop" onClick={onClose}>
+      <div className="quiz-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="quiz-modal-close" onClick={onClose} aria-label="Close">
+          ×
         </button>
-      </form>
-      {status === "error" && <p className="quiz-lead-error">{errorMessage}</p>}
+        <p className="quiz-modal-title">Please enter your name and email to see your result</p>
+        <p className="quiz-modal-desc">
+          We'll show your personalized breakdown here and send a copy to your inbox.
+        </p>
+        <form onSubmit={handleSubmit} className="quiz-modal-form">
+          <input
+            type="text"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+            className="quiz-hidden"
+            aria-hidden="true"
+          />
+          <input
+            type="text"
+            required
+            placeholder="Your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="quiz-lead-input"
+          />
+          <input
+            type="email"
+            required
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="quiz-lead-input"
+          />
+          <button type="submit" disabled={status === "loading"} className="quiz-lead-btn">
+            {status === "loading" ? "Submitting..." : "See my results"}
+          </button>
+        </form>
+        {status === "error" && <p className="quiz-lead-error">{errorMessage}</p>}
+      </div>
     </div>
   );
 }
