@@ -1,5 +1,5 @@
 title: How to Build a Voice Agent with LangChain
-description: Standalone demos for LangChain's voice agent capabilities, where agents are Python classes and methods act as tools without a JSON tool-schema round trip.
+description: A voice-controlled executive assistant built with LangChain's create_agent — a multi-agent system that checks Gmail, drafts replies, researches the web, and writes to Notion, all wired up over MCP.
 type: github
 url: https://github.com/zahere-dev/langchain-voice-agent-tutorial
 publishedAt: '2026-09-07'
