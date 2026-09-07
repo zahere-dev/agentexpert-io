@@ -1,0 +1,6 @@
+title: How to Build a Voice Agent with LangChain
+description: Standalone demos for LangChain's voice agent capabilities, where agents are Python classes and methods act as tools without a JSON tool-schema round trip.
+type: github
+url: https://github.com/zahere-dev/langchain-voice-agent-tutorial
+publishedAt: '2026-09-07'
+image: ./img/voice_agent.png
