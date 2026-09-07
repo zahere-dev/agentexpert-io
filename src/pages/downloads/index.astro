@@ -1,0 +1,108 @@
+---
+export const prerender = true;
+
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+
+const assets = (await getCollection('assets')).sort(
+  (a, b) => new Date(b.data.publishedAt ?? 0).getTime() - new Date(a.data.publishedAt ?? 0).getTime()
+);
+
+const TYPE_LABEL: Record<string, string> = {
+  github: 'GitHub repo',
+  zip: 'ZIP file',
+  pdf: 'PDF',
+  ppt: 'Slides',
+  link: 'Link',
+};
+---
+<Layout title="Downloads" description="Free resources for building AI agents — repos, guides, and demos.">
+  <div class="container">
+    <section class="hero">
+      <p class="eyebrow">agentexpert.io</p>
+      <h1>Downloads</h1>
+      <p class="sub">Free resources for building AI agents. Enter your email on any one to get the link.</p>
+    </section>
+
+    <div class="grid">
+      {assets.map((asset) => (
+        <a href={`/get/${asset.id}`} class="card">
+          {asset.data.image && (
+            <div class="card-image">
+              <Image src={asset.data.image} alt={asset.data.title} width={640} height={360} />
+            </div>
+          )}
+          <div class="card-body">
+            <span class="card-type">{TYPE_LABEL[asset.data.type] ?? asset.data.type}</span>
+            <p class="card-title">{asset.data.title}</p>
+            <p class="card-desc">{asset.data.description}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+
+    <footer class="foot">
+      <span>By <a href="https://zahere.com" target="_blank">Zahiruddin Tavargere</a> — Senior Generative AI Architect with 15+ years' experience building enterprise systems</span>
+      <div class="foot-links">
+        <a href="https://www.youtube.com/@adaptiveengineer" target="_blank" rel="noopener noreferrer">YouTube</a>
+        <a href="https://newsletter.adaptiveengineer.com/" target="_blank" rel="noopener noreferrer">Newsletter</a>
+      </div>
+    </footer>
+  </div>
+</Layout>
+
+<style>
+  .container { max-width: 760px; padding-top: 4.5rem; padding-bottom: 4rem; }
+
+  .hero { margin-bottom: 2.5rem; }
+  .eyebrow { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; }
+  h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 0.6rem; }
+  .sub { font-size: 0.95rem; color: var(--muted); max-width: 520px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 3rem;
+  }
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    overflow: hidden;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .card:hover { border-color: var(--text); transform: translateY(-1px); }
+
+  .card-image { aspect-ratio: 16 / 9; overflow: hidden; }
+  .card-image :global(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .card-body { padding: 1.1rem 1.25rem 1.35rem; }
+  .card-type {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    background: var(--bg);
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+    margin-bottom: 0.6rem;
+  }
+  .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; line-height: 1.35; }
+  .card-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.55; }
+
+  .foot { font-size: 0.78rem; color: var(--muted); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+  .foot a { border-bottom: 1px solid var(--border); }
+  .foot a:hover { color: var(--text); border-color: var(--text); }
+  .foot-links { display: flex; gap: 1.25rem; }
+</style>
