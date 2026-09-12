@@ -1,0 +1,24 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PyodideExam from '../components/PyodideExam.tsx';
+---
+<Layout title="Exam Preview (Prototype)" description="A working prototype of trace-based agent scenario grading, running real Python in the browser via Pyodide.">
+  <div class="container">
+    <p class="eyebrow">agentexpert.io &mdash; internal prototype, not linked from navigation</p>
+    <h1>Scenario grading: execution, not description</h1>
+    <p class="sub">
+      Write the agent's response as real Python. It runs against a mock tool harness
+      that logs every call, and the checks below grade what actually happened &mdash;
+      not what you wrote about what should happen.
+    </p>
+
+    <PyodideExam client:only="react" />
+  </div>
+</Layout>
+
+<style>
+  .container { max-width: 920px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+  .eyebrow { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; }
+  h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 0.75rem; }
+  .sub { font-size: 0.92rem; color: var(--muted); max-width: 620px; margin-bottom: 2rem; line-height: 1.6; }
+</style>
