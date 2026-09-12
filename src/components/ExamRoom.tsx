@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./exam-room.css";
 import { usePyodide } from "../lib/usePyodide";
 import { runChecks, type ToolCall, type CheckResult } from "../lib/examChecks";
@@ -6,6 +6,7 @@ import type { QuestionRow, ExecutionContent, ReasoningContent, BlockArrangerCont
 import { getAnonSessionId } from "../lib/anonSession";
 import { authClient } from "../lib/authClient";
 import { shuffle } from "../lib/shuffle";
+import { saveExamSession, loadExamSession, clearExamSession } from "../lib/examSession";
 import AuthPanel from "./AuthPanel";
 
 type Phase = "picker" | "quiz" | "results";
@@ -86,8 +87,54 @@ export default function ExamRoom() {
   const dragBlockId = useRef<string | null>(null);
 
   const [results, setResults] = useState<Results | null>(null);
+  const [restoring, setRestoring] = useState(true);
 
   const question = examQuestions[index];
+
+  // Restore an in-progress attempt after a full-page reload (e.g. signing
+  // in mid-exam navigates away to Google and back) instead of silently
+  // dropping the candidate back to the picker screen.
+  useEffect(() => {
+    const saved = loadExamSession();
+    if (saved) {
+      setAttemptId(saved.attemptId);
+      setLengthTier(saved.lengthTier as LengthTier);
+      setExamQuestions(saved.questions);
+      setIndex(saved.index);
+      setAnswered(saved.answered);
+      setMarked(new Set(saved.marked));
+      setReasoningAnswers(saved.reasoningAnswers);
+      setBlockOrders(saved.blockOrders);
+      setPhase("quiz");
+    }
+    setRestoring(false);
+  }, []);
+
+  // Persist progress on every change while the quiz is in progress.
+  useEffect(() => {
+    if (phase !== "quiz" || !attemptId || examQuestions.length === 0) return;
+    saveExamSession({
+      attemptId,
+      lengthTier,
+      questions: examQuestions,
+      index,
+      answered,
+      marked: Array.from(marked),
+      reasoningAnswers,
+      blockOrders,
+    });
+  }, [phase, attemptId, lengthTier, examQuestions, index, answered, marked, reasoningAnswers, blockOrders]);
+
+  // A restored question needs its Pyodide harness (re)loaded once the
+  // runtime is ready -- on a fresh start this is already true by the time
+  // startExam() runs, but after a reload-restore, Pyodide is booting from
+  // scratch and may not be ready yet when the question list comes back.
+  useEffect(() => {
+    if (pyodideState === "ready" && phase === "quiz" && question) {
+      loadQuestion(question);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pyodideState]);
 
   async function startExam() {
     setStarting(true);
@@ -242,8 +289,13 @@ export default function ExamRoom() {
     maybeSaveReasoningAnswer();
     const res = await fetch(`/api/exam/attempts/${attemptId}/complete`, { method: "POST" });
     const data = await res.json();
+    clearExamSession();
     setResults(data);
     setPhase("results");
+  }
+
+  if (restoring) {
+    return <div className="exam-room" />;
   }
 
   if (phase === "picker") {

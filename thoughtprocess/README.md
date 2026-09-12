@@ -32,6 +32,11 @@ reconstructed after the fact.
   a third question format for "put these in the right order" scenarios
   (e.g. the ReAct loop) — exact-match auto-gradable, drag-and-drop plus
   up/down buttons, no code and no prose involved.
+- [06-fix-signin-resets-exam-progress.md](./06-fix-signin-resets-exam-progress.md) —
+  why signing in mid-exam looked like it reset to the homepage (a real
+  full-page reload wiping React state, not a routing bug), a dead end
+  worth recording (the session-verifier param turned out to already be
+  handled), and the sessionStorage-based fix that resumes progress.
 
 New entries get added as `NN-short-name.md`, numbered in the order decisions
 were made. Don't edit old entries to reflect later reversals — add a new
