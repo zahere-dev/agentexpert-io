@@ -14,6 +14,10 @@ reconstructed after the fact.
 - [01-phase-1-schema.md](./01-phase-1-schema.md) — the data model: why
   `attempts.user_id` is nullable, how anonymous attempts get claimed on
   sign-in, and the schema itself.
+- [02-phase-2-auth-and-claim.md](./02-phase-2-auth-and-claim.md) — Neon
+  Auth wired up (Google working today, GitHub pending real OAuth app
+  credentials), why this had to be JWT-based rather than cookie-based, and
+  the claim flow that connects an anonymous attempt to a real account.
 
 New entries get added as `NN-short-name.md`, numbered in the order decisions
 were made. Don't edit old entries to reflect later reversals — add a new

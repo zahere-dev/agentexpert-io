@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import PyodideExam from '../components/PyodideExam.tsx';
+import AuthPanel from '../components/AuthPanel.tsx';
 ---
 <Layout title="Exam Preview (Prototype)" description="A working prototype of trace-based agent scenario grading, running real Python in the browser via Pyodide.">
   <div class="container">
@@ -12,6 +13,10 @@ import PyodideExam from '../components/PyodideExam.tsx';
       not what you wrote about what should happen.
     </p>
 
+    <div class="auth-row">
+      <AuthPanel client:only="react" />
+    </div>
+
     <PyodideExam client:only="react" />
   </div>
 </Layout>
@@ -21,4 +26,5 @@ import PyodideExam from '../components/PyodideExam.tsx';
   .eyebrow { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; }
   h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 0.75rem; }
   .sub { font-size: 0.92rem; color: var(--muted); max-width: 620px; margin-bottom: 2rem; line-height: 1.6; }
+  .auth-row { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
 </style>

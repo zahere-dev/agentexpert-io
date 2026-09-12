@@ -1,0 +1,35 @@
+.auth-panel { display: flex; align-items: center; gap: 0.75rem; }
+
+.auth-buttons { display: flex; gap: 0.5rem; }
+.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong, var(--border));
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.auth-btn:hover:not(:disabled) { background: var(--bg); }
+.auth-btn:disabled { opacity: 0.5; cursor: default; }
+.auth-btn svg { width: 16px; height: 16px; flex: 0 0 auto; }
+
+.auth-session { display: flex; align-items: center; gap: 0.65rem; font-size: 0.85rem; color: var(--muted); }
+.auth-session strong { color: var(--text); }
+.auth-signout {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+.auth-signout:hover { color: var(--text); }
+
+.auth-loading { font-size: 0.82rem; color: var(--muted); }
