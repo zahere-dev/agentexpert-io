@@ -1,6 +1,6 @@
 import { db } from "./client";
 import { questions } from "./schema";
-import type { ExecutionContent, ReasoningContent } from "../lib/examTypes";
+import type { ExecutionContent, ReasoningContent, BlockArrangerContent } from "../lib/examTypes";
 
 /**
  * Three real, fully-working execution scenarios -- deliberately covering
@@ -282,6 +282,44 @@ const REASONING_SEED: Array<{
   },
 ];
 
+/**
+ * A third format: "put these in the right order" -- exact-match
+ * auto-gradable (unlike free text), but there's no code to run and no tool
+ * trace, so neither the execution nor reasoning panel fits. One example:
+ * the ReAct loop itself, which is the reasoning pattern the whole exam is
+ * built around.
+ */
+const BLOCK_ARRANGER_SEED: Array<{
+  label: string;
+  psychometricAttribute: string;
+  difficulty: number;
+  content: BlockArrangerContent;
+}> = [
+  {
+    label: "Arrange the ReAct loop",
+    psychometricAttribute: "Agent Loop & Planning",
+    difficulty: 1,
+    content: {
+      request: "An agent is given a goal and has tools available. Put its reasoning loop into the correct order.",
+      instructions: "Drag the steps into the order the agent actually executes them, from first to last.",
+      blocks: [
+        { id: "goal", label: "Receive the goal", description: "The agent is given a task and starts from here." },
+        { id: "reason", label: "Reason about what to do next", description: "Decide which action moves toward the goal." },
+        { id: "act", label: "Choose and call a tool", description: "Execute the chosen action." },
+        { id: "observe", label: "Observe the result", description: "Read what the tool actually returned." },
+        { id: "decide", label: "Decide: repeat, or respond", description: "Either loop back to reasoning, or give the final answer." },
+      ],
+      correctOrder: ["goal", "reason", "act", "observe", "decide"],
+      great: [
+        "Starts from the goal, not from picking a tool first",
+        "Places reasoning before acting, not after",
+        "Places observation after the tool call, not before",
+        "Understands the loop can repeat before producing a final answer",
+      ],
+    },
+  },
+];
+
 async function main() {
   for (const q of SEED) {
     await db.insert(questions).values({
@@ -299,6 +337,16 @@ async function main() {
       psychometricAttribute: q.psychometricAttribute,
       difficulty: q.difficulty,
       scenarioType: "reasoning",
+      content: q.content,
+    });
+    console.log(`Inserted: ${q.label}`);
+  }
+  for (const q of BLOCK_ARRANGER_SEED) {
+    await db.insert(questions).values({
+      label: q.label,
+      psychometricAttribute: q.psychometricAttribute,
+      difficulty: q.difficulty,
+      scenarioType: "blockArranger",
       content: q.content,
     });
     console.log(`Inserted: ${q.label}`);

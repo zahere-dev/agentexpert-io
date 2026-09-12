@@ -2,9 +2,10 @@ import { useRef, useState } from "react";
 import "./exam-room.css";
 import { usePyodide } from "../lib/usePyodide";
 import { runChecks, type ToolCall, type CheckResult } from "../lib/examChecks";
-import type { QuestionRow, ExecutionContent, ReasoningContent } from "../lib/examTypes";
+import type { QuestionRow, ExecutionContent, ReasoningContent, BlockArrangerContent } from "../lib/examTypes";
 import { getAnonSessionId } from "../lib/anonSession";
 import { authClient } from "../lib/authClient";
+import { shuffle } from "../lib/shuffle";
 import AuthPanel from "./AuthPanel";
 
 type Phase = "picker" | "quiz" | "results";
@@ -79,6 +80,11 @@ export default function ExamRoom() {
   const [sampleOpen, setSampleOpen] = useState<Record<string, boolean>>({});
   const answerTextareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Block-arranger state
+  const [blockOrders, setBlockOrders] = useState<Record<string, string[]>>({});
+  const [arrangeResult, setArrangeResult] = useState<Record<string, boolean>>({});
+  const dragBlockId = useRef<string | null>(null);
+
   const [results, setResults] = useState<Results | null>(null);
 
   const question = examQuestions[index];
@@ -99,6 +105,8 @@ export default function ExamRoom() {
       setAnswered({});
       setMarked(new Set());
       setReasoningAnswers({});
+      setBlockOrders({});
+      setArrangeResult({});
       setPhase("quiz");
       loadQuestion(data.questions[0]);
     } catch (err) {
@@ -117,6 +125,12 @@ export default function ExamRoom() {
       if (pyodideRef.current) {
         pyodideRef.current.runPython(content.harnessSource);
       }
+    } else if (q.scenarioType === "blockArranger") {
+      setBlockOrders((prev) => {
+        if (prev[q.id]) return prev; // preserve arrangement when navigating back
+        const content = q.content as BlockArrangerContent;
+        return { ...prev, [q.id]: shuffle(content.blocks.map((b) => b.id)) };
+      });
     }
   }
 
@@ -193,6 +207,25 @@ export default function ExamRoom() {
     else if (cmd === "italic") next = wrapSelection(ta, "*", "*", value);
     else if (cmd === "list") next = wrapSelection(ta, "- ", "", value);
     setReasoningAnswers((prev) => ({ ...prev, [question.id]: next }));
+  }
+
+  function moveBlock(questionId: string, fromIndex: number, toIndex: number) {
+    setBlockOrders((prev) => {
+      const order = [...(prev[questionId] ?? [])];
+      if (toIndex < 0 || toIndex >= order.length) return prev;
+      const [moved] = order.splice(fromIndex, 1);
+      order.splice(toIndex, 0, moved);
+      return { ...prev, [questionId]: order };
+    });
+  }
+
+  function checkArrangement() {
+    if (!question || question.scenarioType !== "blockArranger") return;
+    const content = question.content as BlockArrangerContent;
+    const order = blockOrders[question.id] ?? [];
+    const isCorrect = order.length === content.correctOrder.length && order.every((id, i) => id === content.correctOrder[i]);
+    setArrangeResult((prev) => ({ ...prev, [question.id]: isCorrect }));
+    saveResponse(question, order, null, isCorrect);
   }
 
   function toggleMark() {
@@ -288,8 +321,16 @@ export default function ExamRoom() {
   const progressPct = Math.round(((index + 1) / examQuestions.length) * 100);
   const passedCount = checks?.filter((c) => c.passed).length ?? null;
   const isExecution = question.scenarioType === "execution";
-  const reasoningContent = !isExecution ? (question.content as ReasoningContent) : null;
+  const isReasoning = question.scenarioType === "reasoning";
+  const isArranger = question.scenarioType === "blockArranger";
+  const reasoningContent = isReasoning ? (question.content as ReasoningContent) : null;
+  const arrangerContent = isArranger ? (question.content as BlockArrangerContent) : null;
   const isSampleOpen = sampleOpen[question.id] ?? false;
+  const currentOrder = arrangerContent ? blockOrders[question.id] ?? [] : [];
+  const orderedBlocks = arrangerContent
+    ? currentOrder.map((id) => arrangerContent.blocks.find((b) => b.id === id)!).filter(Boolean)
+    : [];
+  const formatLabel = isExecution ? "Run code" : isArranger ? "Arrange steps" : "Written answer";
 
   return (
     <div className="exam-room">
@@ -358,7 +399,7 @@ export default function ExamRoom() {
           </div>
           <div className="exam-meta-item">
             <span className="exam-meta-label">FORMAT</span>
-            <span className="exam-meta-value">{isExecution ? "Run code" : "Written answer"}</span>
+            <span className="exam-meta-value">{formatLabel}</span>
           </div>
         </aside>
 
@@ -378,56 +419,140 @@ export default function ExamRoom() {
             </div>
           </div>
 
-          <div className="exam-card">
-            <div className="exam-card-head">
-              <span className="exam-icon-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14.7 6.3a4 4 0 0 0-5.4 5.1L4 16.7V20h3.3l5.3-5.3a4 4 0 0 0 5.1-5.4l-2.8 2.8-2-.6-.6-2z" />
-                </svg>
-              </span>
-              <h3>Agent's Available Tools</h3>
+          {isArranger ? (
+            <div className="exam-card">
+              <div className="exam-card-head">
+                <h3>Instructions</h3>
+              </div>
+              <p className="exam-instructions-text">{arrangerContent!.instructions}</p>
             </div>
-            <div className="exam-tools-grid">
-              {question.content.tools.map((t) => (
-                <div className="exam-tool-card" key={t.name}>
-                  <span className="exam-tool-name">{t.name}</span>
-                  <p className="exam-tool-desc">{t.description}</p>
-                  {t.params.map((p) => (
-                    <span className="exam-param-tag" key={p}>
-                      {p}
-                    </span>
+          ) : (
+            <>
+              <div className="exam-card">
+                <div className="exam-card-head">
+                  <span className="exam-icon-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14.7 6.3a4 4 0 0 0-5.4 5.1L4 16.7V20h3.3l5.3-5.3a4 4 0 0 0 5.1-5.4l-2.8 2.8-2-.6-.6-2z" />
+                    </svg>
+                  </span>
+                  <h3>Agent's Available Tools</h3>
+                </div>
+                <div className="exam-tools-grid">
+                  {(question.content as ExecutionContent | ReasoningContent).tools.map((t) => (
+                    <div className="exam-tool-card" key={t.name}>
+                      <span className="exam-tool-name">{t.name}</span>
+                      <p className="exam-tool-desc">{t.description}</p>
+                      {t.params.map((p) => (
+                        <span className="exam-param-tag" key={p}>
+                          {p}
+                        </span>
+                      ))}
+                    </div>
                   ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          <div className="exam-constraints-box">
-            <div className="exam-constraints-head">Important Constraints</div>
-            <ul>
-              {question.content.constraints.map((c) => (
-                <li key={c}>{c}</li>
-              ))}
-            </ul>
-          </div>
+              <div className="exam-constraints-box">
+                <div className="exam-constraints-head">Important Constraints</div>
+                <ul>
+                  {(question.content as ExecutionContent | ReasoningContent).constraints.map((c) => (
+                    <li key={c}>{c}</li>
+                  ))}
+                </ul>
+              </div>
 
-          <div className="exam-card">
-            <div className="exam-card-head">
-              <h3>What You Need to Do</h3>
-            </div>
-            <ul className="exam-todo-list">
-              {question.content.todo.map((t, i) => (
-                <li key={i}>
-                  <span className="exam-todo-num">{i + 1}</span>
-                  <span>{t}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+              <div className="exam-card">
+                <div className="exam-card-head">
+                  <h3>What You Need to Do</h3>
+                </div>
+                <ul className="exam-todo-list">
+                  {(question.content as ExecutionContent | ReasoningContent).todo.map((t, i) => (
+                    <li key={i}>
+                      <span className="exam-todo-num">{i + 1}</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
         </section>
 
         <section className="exam-answer-pane">
-          {isExecution ? (
+          {isArranger ? (
+            <>
+              <div className="exam-answer-head">
+                <h3>Your Answer</h3>
+                <p>{arrangerContent!.instructions}</p>
+              </div>
+
+              <ul className="exam-block-list">
+                {orderedBlocks.map((block, i) => (
+                  <li
+                    key={block.id}
+                    className="exam-block-item"
+                    draggable
+                    onDragStart={() => (dragBlockId.current = block.id)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => {
+                      const fromId = dragBlockId.current;
+                      if (!fromId || fromId === block.id) return;
+                      const fromIndex = currentOrder.indexOf(fromId);
+                      moveBlock(question.id, fromIndex, i);
+                    }}
+                  >
+                    <span className="exam-block-handle" title="Drag to reorder">
+                      &#8942;&#8942;
+                    </span>
+                    <span className="exam-block-index">{i + 1}</span>
+                    <div className="exam-block-text">
+                      <span className="exam-block-label">{block.label}</span>
+                      <span className="exam-block-desc">{block.description}</span>
+                    </div>
+                    <div className="exam-block-arrows">
+                      <button onClick={() => moveBlock(question.id, i, i - 1)} disabled={i === 0} title="Move up">
+                        &uarr;
+                      </button>
+                      <button
+                        onClick={() => moveBlock(question.id, i, i + 1)}
+                        disabled={i === orderedBlocks.length - 1}
+                        title="Move down"
+                      >
+                        &darr;
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <button className="exam-check-order-btn" onClick={checkArrangement}>
+                Check Order
+              </button>
+
+              {arrangeResult[question.id] !== undefined && (
+                <div className="exam-checks-box">
+                  <div className="exam-check-item">
+                    <span className={`exam-check-icon ${arrangeResult[question.id] ? "pass" : "fail"}`}>
+                      {arrangeResult[question.id] ? ICON_CHECK : ICON_CROSS}
+                    </span>
+                    <span>{arrangeResult[question.id] ? "Correct order!" : "Not quite the right order yet."}</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="exam-great-box">
+                <div className="exam-great-head">What a Great Answer Looks Like</div>
+                <ul>
+                  {arrangerContent!.great.map((g, i) => (
+                    <li key={i}>
+                      <span className="exam-check-icon pass">{ICON_CHECK}</span>
+                      <span>{g}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          ) : isExecution ? (
             <>
               <div className="exam-answer-head">
                 <h3>Your Answer</h3>

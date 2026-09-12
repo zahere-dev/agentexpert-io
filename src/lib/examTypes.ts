@@ -38,13 +38,33 @@ export interface ReasoningContent {
   sampleAnswer: string;
 }
 
-export type QuestionContent = ExecutionContent | ReasoningContent;
+export interface ArrangeBlock {
+  id: string;
+  label: string;
+  description: string;
+}
+
+/**
+ * Shape of `questions.content` for scenarioType = 'blockArranger' -- put a
+ * shuffled set of labeled steps into the correct order (e.g. the ReAct
+ * loop). Auto-graded, unlike 'reasoning', because "is this the right
+ * order" is exact-match checkable -- no LLM jury needed for this one.
+ */
+export interface BlockArrangerContent {
+  request: string;
+  instructions: string;
+  blocks: ArrangeBlock[];
+  correctOrder: string[]; // block ids, in the correct sequence
+  great: string[];
+}
+
+export type QuestionContent = ExecutionContent | ReasoningContent | BlockArrangerContent;
 
 export interface QuestionRow {
   id: string;
   label: string;
   psychometricAttribute: string;
   difficulty: number;
-  scenarioType: "execution" | "reasoning";
+  scenarioType: "execution" | "reasoning" | "blockArranger";
   content: QuestionContent;
 }

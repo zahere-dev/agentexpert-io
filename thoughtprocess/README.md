@@ -28,6 +28,10 @@ reconstructed after the fact.
   code simulator for scenarios that aren't a tool-call sequence, and a
   real double-save bug this surfaced (fixed with a DB-level unique
   constraint + upsert, not just a client-side patch).
+- [05-block-arranger-question-type.md](./05-block-arranger-question-type.md) —
+  a third question format for "put these in the right order" scenarios
+  (e.g. the ReAct loop) — exact-match auto-gradable, drag-and-drop plus
+  up/down buttons, no code and no prose involved.
 
 New entries get added as `NN-short-name.md`, numbered in the order decisions
 were made. Don't edit old entries to reflect later reversals — add a new
