@@ -18,6 +18,11 @@ reconstructed after the fact.
   Auth wired up (Google working today, GitHub pending real OAuth app
   credentials), why this had to be JWT-based rather than cookie-based, and
   the claim flow that connects an anonymous attempt to a real account.
+- [03-phase-3-exam-ux.md](./03-phase-3-exam-ux.md) — the real exam room:
+  the artifact's visual design paired with the actual working mechanism
+  (Pyodide execution + trace grading, not the mockup's prose answer), a
+  generic check DSL instead of stored code, and the honest gap that only
+  3 real questions exist against a 10/30/50-question product decision.
 
 New entries get added as `NN-short-name.md`, numbered in the order decisions
 were made. Don't edit old entries to reflect later reversals — add a new

@@ -1,0 +1,29 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ExamRoom from '../components/ExamRoom.tsx';
+import AuthPanel from '../components/AuthPanel.tsx';
+---
+<Layout title="Agent Architect Exam" description="A real, execution-graded assessment of your AI agent building skills.">
+  <div class="container">
+    <div class="top-row">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V12"/><circle cx="6" cy="17" r="2.5"/><circle cx="18" cy="17" r="2.5"/><path d="M12 12 6 14.7M12 12l6 2.7"/></svg>
+        </div>
+        <span class="brand-name">agentexpert.io</span>
+      </div>
+      <AuthPanel client:only="react" />
+    </div>
+
+    <ExamRoom client:only="react" />
+  </div>
+</Layout>
+
+<style>
+  .container { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .top-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 0.55rem; }
+  .brand-mark { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(155deg, #6d5bd0, #5642b8); display: flex; align-items: center; justify-content: center; }
+  .brand-mark svg { width: 16px; height: 16px; }
+  .brand-name { font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; }
+</style>

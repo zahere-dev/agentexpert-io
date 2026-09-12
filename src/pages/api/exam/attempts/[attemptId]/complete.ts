@@ -1,0 +1,65 @@
+import type { APIRoute } from "astro";
+import { eq } from "drizzle-orm";
+import { db } from "../../../../../db/client";
+import { attempts, responses, questions, attributeScores } from "../../../../../db/schema";
+
+export const prerender = false;
+
+export const POST: APIRoute = async ({ params }) => {
+  const attemptId = params.attemptId;
+  if (!attemptId) {
+    return new Response(JSON.stringify({ error: "Missing attempt id" }), { status: 400 });
+  }
+
+  const rows = await db
+    .select({
+      isCorrect: responses.isCorrect,
+      psychometricAttribute: questions.psychometricAttribute,
+    })
+    .from(responses)
+    .innerJoin(questions, eq(responses.questionId, questions.id))
+    .where(eq(responses.attemptId, attemptId));
+
+  // One question = one point toward its attribute for now (isCorrect is
+  // "passed every check for that question"). Partial credit per-check
+  // would need responses to carry a score, not just a boolean -- a
+  // deliberate simplification for this phase, see thoughtprocess.
+  const byAttribute = new Map<string, { correct: number; total: number }>();
+  for (const row of rows) {
+    const bucket = byAttribute.get(row.psychometricAttribute) ?? { correct: 0, total: 0 };
+    bucket.total += 1;
+    if (row.isCorrect) bucket.correct += 1;
+    byAttribute.set(row.psychometricAttribute, bucket);
+  }
+
+  const attributeResults = Array.from(byAttribute.entries()).map(([attribute, { correct, total }]) => ({
+    attribute,
+    correct,
+    total,
+    percent: total > 0 ? Math.round((correct / total) * 100) : 0,
+  }));
+
+  const totalCorrect = attributeResults.reduce((sum, a) => sum + a.correct, 0);
+  const totalQuestions = attributeResults.reduce((sum, a) => sum + a.total, 0);
+  const overallPercent = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+  if (attributeResults.length > 0) {
+    await db.insert(attributeScores).values(
+      attributeResults.map((a) => ({
+        attemptId,
+        psychometricAttribute: a.attribute,
+        score: a.correct.toString(),
+        maxScore: a.total.toString(),
+      }))
+    );
+  }
+
+  await db
+    .update(attempts)
+    .set({ status: "completed", overallScore: overallPercent.toString(), completedAt: new Date() })
+    .where(eq(attempts.id, attemptId));
+
+  return new Response(JSON.stringify({ overallPercent, attributeResults }), {
+    headers: { "Content-Type": "application/json" },
+  });
+};

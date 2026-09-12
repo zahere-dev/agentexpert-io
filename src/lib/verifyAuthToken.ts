@@ -41,3 +41,15 @@ export async function verifyAuthToken(authorizationHeader: string | null): Promi
     name: typeof payload.name === "string" ? payload.name : "",
   };
 }
+
+/** Same as verifyAuthToken, but returns null instead of throwing -- for
+ * routes where signing in is optional (e.g. starting an exam attempt
+ * anonymously is allowed; we still want the userId if they happen to
+ * already be signed in). */
+export async function tryVerifyAuthToken(authorizationHeader: string | null): Promise<AuthTokenPayload | null> {
+  try {
+    return await verifyAuthToken(authorizationHeader);
+  } catch {
+    return null;
+  }
+}
