@@ -37,6 +37,11 @@ reconstructed after the fact.
   full-page reload wiping React state, not a routing bug), a dead end
   worth recording (the session-verifier param turned out to already be
   handled), and the sessionStorage-based fix that resumes progress.
+- [07-multiple-choice-and-visual-variants.md](./07-multiple-choice-and-visual-variants.md) —
+  a fourth question type covering plain MCQ, an inline-SVG diagram
+  variant, and a pre-baked execution-log variant for diagnosing a trace
+  you didn't write yourself — plus a real color-mapping bug caught by
+  actually looking at the render, not just the grading logic.
 
 New entries get added as `NN-short-name.md`, numbered in the order decisions
 were made. Don't edit old entries to reflect later reversals — add a new

@@ -1,6 +1,6 @@
 import { db } from "./client";
 import { questions } from "./schema";
-import type { ExecutionContent, ReasoningContent, BlockArrangerContent } from "../lib/examTypes";
+import type { ExecutionContent, ReasoningContent, BlockArrangerContent, MultipleChoiceContent } from "../lib/examTypes";
 
 /**
  * Three real, fully-working execution scenarios -- deliberately covering
@@ -320,6 +320,112 @@ const BLOCK_ARRANGER_SEED: Array<{
   },
 ];
 
+/**
+ * A simple inline architecture diagram -- deliberately drawn with no
+ * visual hint toward the answer (every box the same neutral style) so the
+ * question tests reading the *structure* of the flow, not spotting a red
+ * box.
+ */
+const CUSTOMER_SUPPORT_DIAGRAM_SVG = `
+<svg viewBox="0 0 560 220" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#9694a8" />
+    </marker>
+  </defs>
+  <line x1="280" y1="64" x2="130" y2="130" stroke="#9694a8" stroke-width="1.5" marker-end="url(#arrow)" />
+  <line x1="280" y1="64" x2="280" y2="130" stroke="#9694a8" stroke-width="1.5" marker-end="url(#arrow)" />
+  <line x1="280" y1="64" x2="430" y2="130" stroke="#9694a8" stroke-width="1.5" marker-end="url(#arrow)" />
+  <rect x="220" y="20" width="120" height="44" rx="8" fill="#efeafb" stroke="#6d5bd0" stroke-width="1.5" />
+  <text x="280" y="47" text-anchor="middle" font-size="13" font-family="sans-serif" fill="#17151f" font-weight="600">Orchestrator</text>
+  <rect x="40" y="130" width="150" height="44" rx="8" fill="#fbfaff" stroke="#d8d5ec" stroke-width="1.5" />
+  <text x="115" y="157" text-anchor="middle" font-size="12" font-family="sans-serif" fill="#17151f">Research Agent</text>
+  <rect x="205" y="130" width="150" height="44" rx="8" fill="#fbfaff" stroke="#d8d5ec" stroke-width="1.5" />
+  <text x="280" y="157" text-anchor="middle" font-size="12" font-family="sans-serif" fill="#17151f">Refund Agent</text>
+  <rect x="370" y="130" width="150" height="44" rx="8" fill="#fbfaff" stroke="#d8d5ec" stroke-width="1.5" />
+  <text x="445" y="157" text-anchor="middle" font-size="12" font-family="sans-serif" fill="#17151f">Send Email</text>
+</svg>
+`.trim();
+
+const MULTIPLE_CHOICE_SEED: Array<{
+  label: string;
+  psychometricAttribute: string;
+  difficulty: number;
+  content: MultipleChoiceContent;
+}> = [
+  {
+    label: "What does grounding mean?",
+    psychometricAttribute: "Knowledge",
+    difficulty: 1,
+    content: {
+      request: "A quick knowledge check -- no scenario setup needed for this one.",
+      question: "What does \"grounding\" mean in the context of an AI agent's answers?",
+      options: [
+        "Restarting the agent when it crashes",
+        "Basing responses on retrieved, verifiable source data instead of memory alone",
+        "Rate-limiting how quickly the agent can respond",
+        "Running the agent on local hardware instead of the cloud",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Grounding means tying an answer to something checkable -- a retrieved document, a tool's return value -- rather than letting the model answer purely from memory, which is where hallucination creeps in.",
+    },
+  },
+  {
+    label: "Spot the gap in this architecture",
+    psychometricAttribute: "System Design",
+    difficulty: 3,
+    content: {
+      request: "Read the architecture diagram below before answering.",
+      visual: { kind: "diagram", svg: CUSTOMER_SUPPORT_DIAGRAM_SVG },
+      question: "Looking at this architecture, what's the most concerning structural gap?",
+      options: [
+        "There are three separate agents instead of just one",
+        "Nothing routes back through a review step before Send Email fires",
+        "The orchestrator box is a different color from the others",
+        "Research Agent and Refund Agent have similar names",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Send Email is an irreversible action with no human-in-the-loop or review step shown before it fires -- exactly the kind of gap that matters far more than how many agents there are or what they're named.",
+    },
+  },
+  {
+    label: "Diagnose this agent's behavior from its log",
+    psychometricAttribute: "Analysis",
+    difficulty: 3,
+    content: {
+      request: "An agent was asked to check whether an item is back in stock. Read its execution log below.",
+      visual: {
+        kind: "trace",
+        lines: [
+          { text: 'ACTION check_inventory(sku="SKU-88214")', kind: "action" },
+          { text: "OBSERVATION {\"in_stock\": false}", kind: "observation" },
+          { text: 'ACTION check_inventory(sku="SKU-88214")', kind: "action" },
+          { text: "OBSERVATION {\"in_stock\": false}", kind: "observation" },
+          { text: 'ACTION check_inventory(sku="SKU-88214")', kind: "action" },
+          { text: "OBSERVATION {\"in_stock\": false}", kind: "observation" },
+          { text: 'ACTION check_inventory(sku="SKU-88214")', kind: "action" },
+          { text: "OBSERVATION {\"in_stock\": false}", kind: "observation" },
+          { text: 'ACTION check_inventory(sku="SKU-88214")', kind: "action" },
+          { text: "OBSERVATION {\"in_stock\": false}", kind: "observation" },
+          { text: 'ACTION notify_customer(message="Item unavailable, we\'ll email you when restocked")', kind: "muted" },
+        ],
+      },
+      question: "What's the most likely explanation for this behavior?",
+      options: [
+        "The inventory tool is broken and always returns false",
+        "The agent has no stopping condition for identical repeated observations, so it retries blindly before eventually giving up",
+        "The customer asked the same question five times",
+        "This is normal, efficient agent behavior",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Calling the same tool with the same arguments and getting the same result five times in a row, with no new information between tries, is a classic sign of a missing termination or backoff condition -- the agent should recognize \"nothing changed\" and stop after one or two attempts, not five.",
+    },
+  },
+];
+
 async function main() {
   for (const q of SEED) {
     await db.insert(questions).values({
@@ -347,6 +453,16 @@ async function main() {
       psychometricAttribute: q.psychometricAttribute,
       difficulty: q.difficulty,
       scenarioType: "blockArranger",
+      content: q.content,
+    });
+    console.log(`Inserted: ${q.label}`);
+  }
+  for (const q of MULTIPLE_CHOICE_SEED) {
+    await db.insert(questions).values({
+      label: q.label,
+      psychometricAttribute: q.psychometricAttribute,
+      difficulty: q.difficulty,
+      scenarioType: "multipleChoice",
       content: q.content,
     });
     console.log(`Inserted: ${q.label}`);

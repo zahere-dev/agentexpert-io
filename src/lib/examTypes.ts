@@ -58,13 +58,42 @@ export interface BlockArrangerContent {
   great: string[];
 }
 
-export type QuestionContent = ExecutionContent | ReasoningContent | BlockArrangerContent;
+export interface TraceLogLine {
+  text: string;
+  kind: "action" | "observation" | "muted";
+}
+
+/**
+ * What accompanies a multiple-choice question, if anything: nothing (a
+ * plain MCQ), an inline diagram to read, or a pre-baked execution log to
+ * diagnose. The log variant is deliberately not the same thing as the
+ * 'execution' type -- here the agent has already run and failed, and the
+ * skill being tested is reading a trace and diagnosing it, not producing
+ * one yourself. Both are real, different skills.
+ */
+export type QuestionVisual = { kind: "diagram"; svg: string } | { kind: "trace"; lines: TraceLogLine[] };
+
+/**
+ * Shape of `questions.content` for scenarioType = 'multipleChoice' -- a
+ * single correct option, exact-match graded, with an explanation shown
+ * immediately after answering regardless of whether the answer was right.
+ */
+export interface MultipleChoiceContent {
+  request: string;
+  visual?: QuestionVisual;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+export type QuestionContent = ExecutionContent | ReasoningContent | BlockArrangerContent | MultipleChoiceContent;
 
 export interface QuestionRow {
   id: string;
   label: string;
   psychometricAttribute: string;
   difficulty: number;
-  scenarioType: "execution" | "reasoning" | "blockArranger";
+  scenarioType: "execution" | "reasoning" | "blockArranger" | "multipleChoice";
   content: QuestionContent;
 }

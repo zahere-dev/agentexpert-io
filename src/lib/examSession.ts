@@ -11,6 +11,7 @@ export interface ExamSessionState {
   marked: number[];
   reasoningAnswers: Record<string, string>;
   blockOrders: Record<string, string[]>;
+  mcqSelected: Record<string, number>;
 }
 
 /**

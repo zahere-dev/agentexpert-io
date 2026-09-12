@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "./exam-room.css";
 import { usePyodide } from "../lib/usePyodide";
 import { runChecks, type ToolCall, type CheckResult } from "../lib/examChecks";
-import type { QuestionRow, ExecutionContent, ReasoningContent, BlockArrangerContent } from "../lib/examTypes";
+import type { QuestionRow, ExecutionContent, ReasoningContent, BlockArrangerContent, MultipleChoiceContent } from "../lib/examTypes";
 import { getAnonSessionId } from "../lib/anonSession";
 import { authClient } from "../lib/authClient";
 import { shuffle } from "../lib/shuffle";
@@ -86,6 +86,9 @@ export default function ExamRoom() {
   const [arrangeResult, setArrangeResult] = useState<Record<string, boolean>>({});
   const dragBlockId = useRef<string | null>(null);
 
+  // Multiple-choice state
+  const [mcqSelected, setMcqSelected] = useState<Record<string, number>>({});
+
   const [results, setResults] = useState<Results | null>(null);
   const [restoring, setRestoring] = useState(true);
 
@@ -105,6 +108,7 @@ export default function ExamRoom() {
       setMarked(new Set(saved.marked));
       setReasoningAnswers(saved.reasoningAnswers);
       setBlockOrders(saved.blockOrders);
+      setMcqSelected(saved.mcqSelected ?? {});
       setPhase("quiz");
     }
     setRestoring(false);
@@ -122,8 +126,9 @@ export default function ExamRoom() {
       marked: Array.from(marked),
       reasoningAnswers,
       blockOrders,
+      mcqSelected,
     });
-  }, [phase, attemptId, lengthTier, examQuestions, index, answered, marked, reasoningAnswers, blockOrders]);
+  }, [phase, attemptId, lengthTier, examQuestions, index, answered, marked, reasoningAnswers, blockOrders, mcqSelected]);
 
   // A restored question needs its Pyodide harness (re)loaded once the
   // runtime is ready -- on a fresh start this is already true by the time
@@ -154,6 +159,7 @@ export default function ExamRoom() {
       setReasoningAnswers({});
       setBlockOrders({});
       setArrangeResult({});
+      setMcqSelected({});
       setPhase("quiz");
       loadQuestion(data.questions[0]);
     } catch (err) {
@@ -275,6 +281,14 @@ export default function ExamRoom() {
     saveResponse(question, order, null, isCorrect);
   }
 
+  function chooseMcq(optionIndex: number) {
+    if (!question || question.scenarioType !== "multipleChoice") return;
+    if (mcqSelected[question.id] !== undefined) return; // already answered, one shot
+    const content = question.content as MultipleChoiceContent;
+    setMcqSelected((prev) => ({ ...prev, [question.id]: optionIndex }));
+    saveResponse(question, optionIndex, null, optionIndex === content.correctIndex);
+  }
+
   function toggleMark() {
     setMarked((prev) => {
       const next = new Set(prev);
@@ -375,14 +389,23 @@ export default function ExamRoom() {
   const isExecution = question.scenarioType === "execution";
   const isReasoning = question.scenarioType === "reasoning";
   const isArranger = question.scenarioType === "blockArranger";
+  const isMcq = question.scenarioType === "multipleChoice";
   const reasoningContent = isReasoning ? (question.content as ReasoningContent) : null;
   const arrangerContent = isArranger ? (question.content as BlockArrangerContent) : null;
+  const mcqContent = isMcq ? (question.content as MultipleChoiceContent) : null;
   const isSampleOpen = sampleOpen[question.id] ?? false;
   const currentOrder = arrangerContent ? blockOrders[question.id] ?? [] : [];
   const orderedBlocks = arrangerContent
     ? currentOrder.map((id) => arrangerContent.blocks.find((b) => b.id === id)!).filter(Boolean)
     : [];
-  const formatLabel = isExecution ? "Run code" : isArranger ? "Arrange steps" : "Written answer";
+  const mcqAnswer = mcqContent ? mcqSelected[question.id] : undefined;
+  const formatLabel = isExecution
+    ? "Run code"
+    : isArranger
+      ? "Arrange steps"
+      : isMcq
+        ? "Multiple choice"
+        : "Written answer";
 
   return (
     <div className="exam-room">
@@ -478,6 +501,25 @@ export default function ExamRoom() {
               </div>
               <p className="exam-instructions-text">{arrangerContent!.instructions}</p>
             </div>
+          ) : isMcq ? (
+            mcqContent!.visual && (
+              <div className="exam-card">
+                <div className="exam-card-head">
+                  <h3>{mcqContent!.visual.kind === "diagram" ? "Diagram" : "Execution log"}</h3>
+                </div>
+                {mcqContent!.visual.kind === "diagram" ? (
+                  <div className="exam-diagram" dangerouslySetInnerHTML={{ __html: mcqContent!.visual.svg }} />
+                ) : (
+                  <div className="exam-output exam-output-static">
+                    {mcqContent!.visual.lines.map((l, i) => (
+                      <div key={i} className={`line-${l.kind === "action" ? "stdout" : "muted"}`}>
+                        {l.text}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
           ) : (
             <>
               <div className="exam-card">
@@ -531,7 +573,45 @@ export default function ExamRoom() {
         </section>
 
         <section className="exam-answer-pane">
-          {isArranger ? (
+          {isMcq ? (
+            <>
+              <div className="exam-answer-head">
+                <h3>Your Answer</h3>
+                <p>{mcqContent!.question}</p>
+              </div>
+
+              <div className="exam-mcq-options">
+                {mcqContent!.options.map((option, i) => {
+                  const isAnswered = mcqAnswer !== undefined;
+                  const isSelected = mcqAnswer === i;
+                  const isRight = i === mcqContent!.correctIndex;
+                  let cls = "exam-mcq-option";
+                  if (isAnswered && isRight) cls += " correct";
+                  else if (isAnswered && isSelected && !isRight) cls += " incorrect";
+                  return (
+                    <button key={i} className={cls} onClick={() => chooseMcq(i)} disabled={isAnswered}>
+                      <span className="exam-mcq-marker">
+                        {isAnswered && isRight ? ICON_CHECK : isAnswered && isSelected ? ICON_CROSS : String.fromCharCode(65 + i)}
+                      </span>
+                      <span>{option}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {mcqAnswer !== undefined && (
+                <div className="exam-checks-box">
+                  <div className="exam-check-item">
+                    <span className={`exam-check-icon ${mcqAnswer === mcqContent!.correctIndex ? "pass" : "fail"}`}>
+                      {mcqAnswer === mcqContent!.correctIndex ? ICON_CHECK : ICON_CROSS}
+                    </span>
+                    <span>{mcqAnswer === mcqContent!.correctIndex ? "Correct!" : "Not quite."}</span>
+                  </div>
+                  <p className="exam-mcq-explanation">{mcqContent!.explanation}</p>
+                </div>
+              )}
+            </>
+          ) : isArranger ? (
             <>
               <div className="exam-answer-head">
                 <h3>Your Answer</h3>
