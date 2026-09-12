@@ -1,22 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import ExamRoom from '../components/ExamRoom.tsx';
+// The exam now lives at the site root -- keep this path alive as a
+// redirect rather than a 404, since it may already be bookmarked or linked.
+return Astro.redirect('/', 301);
 ---
-<Layout title="Agent Architect Exam" description="A real, execution-graded assessment of your AI agent building skills.">
-  <div class="exam-page">
-    <ExamRoom client:only="react" />
-  </div>
-</Layout>
-
-<style is:global>
-  html, body { height: 100%; margin: 0; overflow: hidden; }
-  main { display: flex; flex-direction: column; min-height: 0; }
-</style>
-
-<style>
-  .exam-page { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-  /* Astro's client:only wrapper needs to stretch too, or the flex chain
-     breaks and the exam room collapses to its content height instead of
-     filling the viewport. */
-  .exam-page :global(astro-island) { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-</style>

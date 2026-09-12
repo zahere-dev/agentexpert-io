@@ -1,53 +1,22 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import AgentQuiz from '../components/AgentQuiz.tsx';
+import ExamRoom from '../components/ExamRoom.tsx';
 ---
-<Layout title="agentexpert.io — Where are you in your agent-building journey?">
-  <div class="container">
-
-    <section class="hero">
-      <p class="eyebrow">agentexpert.io</p>
-      <h1>Where are you in your agent-building journey?</h1>
-      <p class="sub">
-        20 questions across Knowledge, Application, Analysis, and Creativity.
-        Answer honestly — you'll get a level, a per-category breakdown, and
-        exactly what to work on next.
-      </p>
-    </section>
-
-    <section class="sim-wrap">
-      <AgentQuiz client:load />
-    </section>
-
-    <footer class="foot">
-      <span>By <a href="https://zahere.com" target="_blank">Zahiruddin Tavargere</a> — Senior Generative AI Architect with 15+ years' experience building enterprise systems</span>
-      <div class="foot-links">
-        <a href="/downloads">Downloads</a>
-        <a href="https://www.youtube.com/@adaptiveengineer" target="_blank" rel="noopener noreferrer">YouTube</a>
-        <a href="https://newsletter.adaptiveengineer.com/" target="_blank" rel="noopener noreferrer">Newsletter</a>
-      </div>
-    </footer>
-
+<Layout title="Agent Architect Exam" description="A real, execution-graded assessment of your AI agent building skills.">
+  <div class="exam-page">
+    <ExamRoom client:only="react" />
   </div>
 </Layout>
 
+<style is:global>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  main { display: flex; flex-direction: column; min-height: 0; }
+</style>
+
 <style>
-  .container { max-width: 640px; padding-top: 4.5rem; padding-bottom: 4rem; }
-
-  .hero { margin-bottom: 2.5rem; }
-  .eyebrow { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; }
-  h1 { font-size: 2.1rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 0.85rem; }
-  .sub { font-size: 0.95rem; color: var(--muted); max-width: 520px; }
-
-  .sim-wrap { margin-bottom: 3rem; }
-
-  .foot { font-size: 0.78rem; color: var(--muted); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
-  .foot a { border-bottom: 1px solid var(--border); }
-  .foot a:hover { color: var(--text); border-color: var(--text); }
-  .foot-links { display: flex; gap: 1.25rem; }
-
-  @media (max-width: 560px) {
-    h1 { font-size: 1.65rem; }
-    .container { padding-top: 3rem; }
-  }
+  .exam-page { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  /* Astro's client:only wrapper needs to stretch too, or the flex chain
+     breaks and the exam room collapses to its content height instead of
+     filling the viewport. */
+  .exam-page :global(astro-island) { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 </style>

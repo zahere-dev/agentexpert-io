@@ -48,6 +48,12 @@ reconstructed after the fact.
   CSS blur over real data), plus the 5-attempt cap for signed-in users —
   and the honest gap in testing it (can't fabricate a real signed JWT, so
   the cap's counting logic was unit-tested directly instead).
+- [09-homepage-becomes-the-exam.md](./09-homepage-becomes-the-exam.md) —
+  `/` now renders the real exam directly (the old, simpler `AgentQuiz`
+  homepage quiz was deleted, not left dangling), `/exam` redirects to `/`,
+  a clearly-labeled placeholder stands in for the still-missing intro
+  video, and the old footer's Downloads/YouTube/Newsletter links move to
+  the picker screen so `/downloads` doesn't get orphaned.
 
 New entries get added as `NN-short-name.md`, numbered in the order decisions
 were made. Don't edit old entries to reflect later reversals — add a new

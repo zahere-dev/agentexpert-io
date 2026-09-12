@@ -390,6 +390,9 @@ export default function ExamRoom() {
     return (
       <div className="exam-room">
         <div className="exam-picker">
+          <div className="exam-intro-video" role="img" aria-label="Intro video placeholder">
+            <span>Intro video coming soon</span>
+          </div>
           <p className="exam-picker-title">Where are you in your agent-building journey?</p>
           <p className="exam-picker-desc">
             Real scenarios -- some graded by running your code, some by your written reasoning. Pick how many
@@ -420,6 +423,11 @@ export default function ExamRoom() {
             </p>
           )}
           {startError && <p className="exam-start-error">{startError}</p>}
+          <div className="exam-picker-foot">
+            <a href="/downloads">Downloads</a>
+            <a href="https://www.youtube.com/@adaptiveengineer" target="_blank" rel="noopener noreferrer">YouTube</a>
+            <a href="https://newsletter.adaptiveengineer.com/" target="_blank" rel="noopener noreferrer">Newsletter</a>
+          </div>
         </div>
       </div>
     );
