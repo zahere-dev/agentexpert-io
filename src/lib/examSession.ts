@@ -2,7 +2,21 @@ import type { QuestionRow } from "./examTypes";
 
 const STORAGE_KEY = "aax_exam_session";
 
+interface AttributeResultSnapshot {
+  attribute: string;
+  total: number;
+  correct?: number;
+  percent?: number;
+}
+
+interface ResultsSnapshot {
+  overallPercent: number;
+  attributeResults: AttributeResultSnapshot[];
+  ungradedCount: number;
+}
+
 export interface ExamSessionState {
+  phase: "quiz" | "results";
   attemptId: string;
   lengthTier: number;
   questions: QuestionRow[];
@@ -12,6 +26,7 @@ export interface ExamSessionState {
   reasoningAnswers: Record<string, string>;
   blockOrders: Record<string, string[]>;
   mcqSelected: Record<string, number>;
+  results?: ResultsSnapshot;
 }
 
 /**

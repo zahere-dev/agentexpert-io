@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 import { db } from "../../../db/client";
 import { attempts, questions } from "../../../db/schema";
 import { tryVerifyAuthToken } from "../../../lib/verifyAuthToken";
+import { countSignedInAttempts, MAX_SIGNED_IN_ATTEMPTS } from "../../../lib/attemptLimit";
 
 export const prerender = false;
 
@@ -31,6 +32,16 @@ export const POST: APIRoute = async ({ request }) => {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  if (auth) {
+    const used = await countSignedInAttempts(auth.userId);
+    if (used >= MAX_SIGNED_IN_ATTEMPTS) {
+      return new Response(
+        JSON.stringify({ error: "attempt_limit_reached", used, limit: MAX_SIGNED_IN_ATTEMPTS }),
+        { status: 403, headers: { "Content-Type": "application/json" } }
+      );
+    }
   }
 
   // Question bank is still small (see thoughtprocess/03-phase-3-exam-ux.md)

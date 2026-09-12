@@ -177,7 +177,7 @@
 .exam-nav-btn svg { width: 14px; height: 14px; }
 
 /* ---- Results ---- */
-.exam-results { flex: 1 1 auto; overflow-y: auto; padding: 2.5rem 1.75rem; max-width: 640px; margin: 0 auto; width: 100%; }
+.exam-results { padding: 2.5rem 1.75rem; max-width: 640px; margin: 0 auto; width: 100%; }
 .exam-ungraded-note { font-size: 0.82rem; color: var(--ax-muted); text-align: center; background: var(--ax-surface-sunken); border: 1px dashed var(--ax-border-strong); border-radius: 10px; padding: 0.85rem 1.1rem; margin-top: 0.5rem; }
 .exam-results-head { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 1.75rem; }
 .exam-ring { width: 116px; height: 116px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 0.9rem; }
@@ -197,7 +197,10 @@
 }
 .exam-blur-card { background: var(--ax-surface); border: 1px solid var(--ax-border); border-radius: 12px; padding: 1.5rem 1.75rem; text-align: center; max-width: 320px; box-shadow: 0 20px 50px rgba(23,21,31,0.18); }
 .exam-blur-card p { font-size: 0.85rem; color: var(--ax-muted); margin: 0 0 1rem; }
-.exam-results-wrap { position: relative; }
+.exam-results-wrap { position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+.exam-attempt-count-note { margin-top: 1rem; font-size: 0.78rem; color: var(--ax-muted); }
+.exam-start-error { margin-top: 0.75rem; font-size: 0.82rem; color: var(--ax-danger); }
 
 /* ---- Reasoning (written-answer) panel -- the "original structure": a
    light editor with a light formatting toolbar, not the dark code editor,

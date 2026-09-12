@@ -19,15 +19,20 @@ interface LogLine {
 
 interface AttributeResult {
   attribute: string;
-  correct: number;
   total: number;
-  percent: number;
+  correct?: number;
+  percent?: number;
 }
 
 interface Results {
   overallPercent: number;
   attributeResults: AttributeResult[];
   ungradedCount: number;
+}
+
+/** True once the breakdown has real numbers, not just attribute names. */
+function isFullResults(r: Results): boolean {
+  return r.attributeResults.every((a) => a.percent !== undefined);
 }
 
 const ICON_CHECK = (
@@ -63,6 +68,7 @@ export default function ExamRoom() {
   const [phase, setPhase] = useState<Phase>("picker");
   const [lengthTier, setLengthTier] = useState<LengthTier>(10);
   const [starting, setStarting] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
 
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [examQuestions, setExamQuestions] = useState<QuestionRow[]>([]);
@@ -91,12 +97,15 @@ export default function ExamRoom() {
 
   const [results, setResults] = useState<Results | null>(null);
   const [restoring, setRestoring] = useState(true);
+  const [attemptCount, setAttemptCount] = useState<{ used: number; limit: number } | null>(null);
 
   const question = examQuestions[index];
 
-  // Restore an in-progress attempt after a full-page reload (e.g. signing
-  // in mid-exam navigates away to Google and back) instead of silently
-  // dropping the candidate back to the picker screen.
+  // Restore an in-progress (or just-completed) attempt after a full-page
+  // reload -- signing in, whether mid-exam or from the results screen,
+  // navigates away to Google and back. Without this, an anonymous user
+  // who signs in specifically to unlock their results would lose the
+  // results screen itself, which defeats the entire point.
   useEffect(() => {
     const saved = loadExamSession();
     if (saved) {
@@ -109,15 +118,22 @@ export default function ExamRoom() {
       setReasoningAnswers(saved.reasoningAnswers);
       setBlockOrders(saved.blockOrders);
       setMcqSelected(saved.mcqSelected ?? {});
-      setPhase("quiz");
+      if (saved.phase === "results" && saved.results) {
+        setResults(saved.results);
+        setPhase("results");
+      } else {
+        setPhase("quiz");
+      }
     }
     setRestoring(false);
   }, []);
 
-  // Persist progress on every change while the quiz is in progress.
+  // Persist progress on every change while the quiz is in progress or the
+  // (possibly still-blurred) results screen is showing.
   useEffect(() => {
-    if (phase !== "quiz" || !attemptId || examQuestions.length === 0) return;
+    if ((phase !== "quiz" && phase !== "results") || !attemptId || examQuestions.length === 0) return;
     saveExamSession({
+      phase,
       attemptId,
       lengthTier,
       questions: examQuestions,
@@ -127,8 +143,46 @@ export default function ExamRoom() {
       reasoningAnswers,
       blockOrders,
       mcqSelected,
+      results: results ?? undefined,
     });
-  }, [phase, attemptId, lengthTier, examQuestions, index, answered, marked, reasoningAnswers, blockOrders, mcqSelected]);
+  }, [phase, attemptId, lengthTier, examQuestions, index, answered, marked, reasoningAnswers, blockOrders, mcqSelected, results]);
+
+  // If we land on (or restore into) the results screen without the full
+  // attribute breakdown, check whether we're actually signed in now --
+  // covers both "signed in mid-exam, already authed by the time we
+  // finished" and "was anonymous, signed in from the results screen,
+  // reload brought us back here."
+  useEffect(() => {
+    if (phase !== "results" || !attemptId || !results || isFullResults(results)) return;
+    authClient.getSession().then(async (session) => {
+      if (!session.data?.user) return;
+      const { data } = await authClient.token();
+      if (!data?.token) return;
+      const res = await fetch(`/api/exam/attempts/${attemptId}/results`, {
+        headers: { Authorization: `Bearer ${data.token}` },
+      });
+      if (!res.ok) return;
+      const full = await res.json();
+      setResults(full);
+    });
+  }, [phase, attemptId, results]);
+
+  // Signed-in candidates see how many of their 5 attempts are used, right
+  // on the picker -- anonymous visitors don't need this, they're uncapped.
+  useEffect(() => {
+    if (phase !== "picker") return;
+    authClient.getSession().then(async (session) => {
+      if (!session.data?.user) return;
+      const { data } = await authClient.token();
+      if (!data?.token) return;
+      const res = await fetch("/api/exam/me/attempt-count", {
+        headers: { Authorization: `Bearer ${data.token}` },
+      });
+      if (!res.ok) return;
+      const { used, limit } = await res.json();
+      setAttemptCount({ used, limit });
+    });
+  }, [phase]);
 
   // A restored question needs its Pyodide harness (re)loaded once the
   // runtime is ready -- on a fresh start this is already true by the time
@@ -143,14 +197,25 @@ export default function ExamRoom() {
 
   async function startExam() {
     setStarting(true);
+    setStartError(null);
     try {
       const res = await fetch("/api/exam/attempts", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(await getAuthHeader()) },
         body: JSON.stringify({ lengthTier, anonSessionId: getAnonSessionId() }),
       });
+      if (res.status === 403) {
+        const body = await res.json().catch(() => null);
+        setStartError(
+          body?.error === "attempt_limit_reached"
+            ? `You've used all ${body.limit} of your attempts.`
+            : "Could not start the exam."
+        );
+        return;
+      }
       if (!res.ok) throw new Error("Could not start exam");
       const data = await res.json();
+      clearExamSession();
       setAttemptId(data.attemptId);
       setExamQuestions(data.questions);
       setIndex(0);
@@ -160,10 +225,12 @@ export default function ExamRoom() {
       setBlockOrders({});
       setArrangeResult({});
       setMcqSelected({});
+      setResults(null);
       setPhase("quiz");
       loadQuestion(data.questions[0]);
     } catch (err) {
       console.error(err);
+      setStartError("Could not start the exam.");
     } finally {
       setStarting(false);
     }
@@ -301,9 +368,15 @@ export default function ExamRoom() {
   async function endExam() {
     if (!attemptId) return;
     maybeSaveReasoningAnswer();
-    const res = await fetch(`/api/exam/attempts/${attemptId}/complete`, { method: "POST" });
+    const res = await fetch(`/api/exam/attempts/${attemptId}/complete`, {
+      method: "POST",
+      headers: await getAuthHeader(),
+    });
     const data = await res.json();
-    clearExamSession();
+    // Deliberately not clearing the saved session here: an anonymous
+    // candidate who signs in specifically to unlock this results screen
+    // needs it to survive the reload that sign-in causes. It's cleared
+    // once they start a fresh attempt instead.
     setResults(data);
     setPhase("results");
   }
@@ -313,6 +386,7 @@ export default function ExamRoom() {
   }
 
   if (phase === "picker") {
+    const outOfAttempts = attemptCount !== null && attemptCount.used >= attemptCount.limit;
     return (
       <div className="exam-room">
         <div className="exam-picker">
@@ -333,49 +407,69 @@ export default function ExamRoom() {
               </button>
             ))}
           </div>
-          <button className="exam-start-btn" onClick={startExam} disabled={starting || pyodideState !== "ready"}>
+          <button
+            className="exam-start-btn"
+            onClick={startExam}
+            disabled={starting || pyodideState !== "ready" || outOfAttempts}
+          >
             {pyodideState !== "ready" ? "Loading Python runtime…" : starting ? "Starting…" : "Start the exam"}
           </button>
+          {attemptCount && (
+            <p className="exam-attempt-count-note">
+              {attemptCount.used} of {attemptCount.limit} attempts used
+            </p>
+          )}
+          {startError && <p className="exam-start-error">{startError}</p>}
         </div>
       </div>
     );
   }
 
   if (phase === "results" && results) {
+    const full = isFullResults(results);
     return (
       <div className="exam-room">
-        <div className="exam-results">
-          <div className="exam-results-head">
-            <div
-              className="exam-ring"
-              style={{ background: `conic-gradient(var(--ax-accent) ${results.overallPercent * 3.6}deg, var(--ax-border) 0deg)` }}
-            >
-              <div className="exam-ring-inner">
-                <span className="exam-ring-score">{results.overallPercent}%</span>
-                <span className="exam-ring-label">Score</span>
+        <div className="exam-results-wrap">
+          <div className={"exam-results" + (full ? "" : " exam-results-blurred")}>
+            <div className="exam-results-head">
+              <div
+                className="exam-ring"
+                style={{ background: `conic-gradient(var(--ax-accent) ${results.overallPercent * 3.6}deg, var(--ax-border) 0deg)` }}
+              >
+                <div className="exam-ring-inner">
+                  <span className="exam-ring-score">{results.overallPercent}%</span>
+                  <span className="exam-ring-label">Score</span>
+                </div>
               </div>
             </div>
+            <div className="exam-attr-grid">
+              {results.attributeResults.map((a) => (
+                <div key={a.attribute}>
+                  <div className="exam-attr-row-head">
+                    <span>{a.attribute}</span>
+                    <span>{full ? `${a.correct}/${a.total} · ${a.percent}%` : "?? / " + a.total}</span>
+                  </div>
+                  <div className="exam-bar-track">
+                    <div className="exam-bar-fill" style={{ width: `${full ? a.percent : 60}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            {full && results.ungradedCount > 0 && (
+              <p className="exam-ungraded-note">
+                {results.ungradedCount} written response{results.ungradedCount > 1 ? "s" : ""} recorded and queued
+                for rubric review -- not included in the score above yet.
+              </p>
+            )}
           </div>
-          <div className="exam-attr-grid">
-            {results.attributeResults.map((a) => (
-              <div key={a.attribute}>
-                <div className="exam-attr-row-head">
-                  <span>{a.attribute}</span>
-                  <span>
-                    {a.correct}/{a.total} {"·"} {a.percent}%
-                  </span>
-                </div>
-                <div className="exam-bar-track">
-                  <div className="exam-bar-fill" style={{ width: `${a.percent}%` }} />
-                </div>
+
+          {!full && (
+            <div className="exam-blur-overlay">
+              <div className="exam-blur-card">
+                <p>Sign in to see your full breakdown by skill area and what to work on next.</p>
+                <AuthPanel />
               </div>
-            ))}
-          </div>
-          {results.ungradedCount > 0 && (
-            <p className="exam-ungraded-note">
-              {results.ungradedCount} written response{results.ungradedCount > 1 ? "s" : ""} recorded and queued for
-              rubric review -- not included in the score above yet.
-            </p>
+            </div>
           )}
         </div>
       </div>

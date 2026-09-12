@@ -42,6 +42,12 @@ reconstructed after the fact.
   variant, and a pre-baked execution-log variant for diagnosing a trace
   you didn't write yourself — plus a real color-mapping bug caught by
   actually looking at the render, not just the grading logic.
+- [08-results-gating-and-attempt-cap.md](./08-results-gating-and-attempt-cap.md) —
+  anonymous takers see a score-only teaser and signed-in takers see the
+  full breakdown, enforced by minimizing what the server sends back (not
+  CSS blur over real data), plus the 5-attempt cap for signed-in users —
+  and the honest gap in testing it (can't fabricate a real signed JWT, so
+  the cap's counting logic was unit-tested directly instead).
 
 New entries get added as `NN-short-name.md`, numbered in the order decisions
 were made. Don't edit old entries to reflect later reversals — add a new

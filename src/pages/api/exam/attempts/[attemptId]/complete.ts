@@ -2,10 +2,12 @@ import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { db } from "../../../../../db/client";
 import { attempts, responses, questions, attributeScores } from "../../../../../db/schema";
+import { readAttemptResults } from "../../../../../lib/examResults";
+import { tryVerifyAuthToken } from "../../../../../lib/verifyAuthToken";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ params }) => {
+export const POST: APIRoute = async ({ params, request }) => {
   const attemptId = params.attemptId;
   if (!attemptId) {
     return new Response(JSON.stringify({ error: "Missing attempt id" }), { status: 400 });
@@ -30,12 +32,8 @@ export const POST: APIRoute = async ({ params }) => {
   // deferred), so they're recorded but excluded from the numeric score
   // rather than silently counted as wrong.
   const byAttribute = new Map<string, { correct: number; total: number }>();
-  let ungradedCount = 0;
   for (const row of rows) {
-    if (row.isCorrect === null) {
-      ungradedCount += 1;
-      continue;
-    }
+    if (row.isCorrect === null) continue;
     const bucket = byAttribute.get(row.psychometricAttribute) ?? { correct: 0, total: 0 };
     bucket.total += 1;
     if (row.isCorrect) bucket.correct += 1;
@@ -46,7 +44,6 @@ export const POST: APIRoute = async ({ params }) => {
     attribute,
     correct,
     total,
-    percent: total > 0 ? Math.round((correct / total) * 100) : 0,
   }));
 
   const totalCorrect = attributeResults.reduce((sum, a) => sum + a.correct, 0);
@@ -69,7 +66,13 @@ export const POST: APIRoute = async ({ params }) => {
     .set({ status: "completed", overallScore: overallPercent.toString(), completedAt: new Date() })
     .where(eq(attempts.id, attemptId));
 
-  return new Response(JSON.stringify({ overallPercent, attributeResults, ungradedCount }), {
+  // Anonymous callers get the score but not the attribute breakdown --
+  // that's the thing worth signing in for. If they're already signed in
+  // by the time they finish, no reason to make them ask twice.
+  const auth = await tryVerifyAuthToken(request.headers.get("authorization"));
+  const results = await readAttemptResults(attemptId, !!auth);
+
+  return new Response(JSON.stringify(results), {
     headers: { "Content-Type": "application/json" },
   });
 };
