@@ -24,8 +24,18 @@ export const POST: APIRoute = async ({ params }) => {
   // "passed every check for that question"). Partial credit per-check
   // would need responses to carry a score, not just a boolean -- a
   // deliberate simplification for this phase, see thoughtprocess.
+  //
+  // Written ("reasoning") answers have isCorrect = null -- there's no
+  // auto-grader for them yet (that's the LLM-jury layer, deliberately
+  // deferred), so they're recorded but excluded from the numeric score
+  // rather than silently counted as wrong.
   const byAttribute = new Map<string, { correct: number; total: number }>();
+  let ungradedCount = 0;
   for (const row of rows) {
+    if (row.isCorrect === null) {
+      ungradedCount += 1;
+      continue;
+    }
     const bucket = byAttribute.get(row.psychometricAttribute) ?? { correct: 0, total: 0 };
     bucket.total += 1;
     if (row.isCorrect) bucket.correct += 1;
@@ -59,7 +69,7 @@ export const POST: APIRoute = async ({ params }) => {
     .set({ status: "completed", overallScore: overallPercent.toString(), completedAt: new Date() })
     .where(eq(attempts.id, attemptId));
 
-  return new Response(JSON.stringify({ overallPercent, attributeResults }), {
+  return new Response(JSON.stringify({ overallPercent, attributeResults, ungradedCount }), {
     headers: { "Content-Type": "application/json" },
   });
 };

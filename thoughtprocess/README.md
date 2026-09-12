@@ -23,6 +23,11 @@ reconstructed after the fact.
   (Pyodide execution + trace grading, not the mockup's prose answer), a
   generic check DSL instead of stored code, and the honest gap that only
   3 real questions exist against a 10/30/50-question product decision.
+- [04-fullscreen-and-mixed-question-types.md](./04-fullscreen-and-mixed-question-types.md) —
+  true full-screen app layout, written-answer questions alongside the
+  code simulator for scenarios that aren't a tool-call sequence, and a
+  real double-save bug this surfaced (fixed with a DB-level unique
+  constraint + upsert, not just a client-side patch).
 
 New entries get added as `NN-short-name.md`, numbered in the order decisions
 were made. Don't edit old entries to reflect later reversals — add a new

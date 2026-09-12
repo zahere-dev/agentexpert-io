@@ -29,13 +29,17 @@ export const POST: APIRoute = async ({ request, params }) => {
 
   const { questionId, answer, trace, isCorrect } = parsed.data;
 
-  await db.insert(responses).values({
-    attemptId,
-    questionId,
-    answer,
-    trace,
-    isCorrect,
-  });
+  // A candidate can re-run code or re-save a written answer any number of
+  // times -- overwrite this question's response within the attempt rather
+  // than accumulating duplicate rows (which would double-count toward the
+  // score). Enforced at the DB level by responses_attempt_question_unique.
+  await db
+    .insert(responses)
+    .values({ attemptId, questionId, answer, trace, isCorrect })
+    .onConflictDoUpdate({
+      target: [responses.attemptId, responses.questionId],
+      set: { answer, trace, isCorrect },
+    });
 
   return new Response(JSON.stringify({ ok: true }), {
     headers: { "Content-Type": "application/json" },

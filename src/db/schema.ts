@@ -9,6 +9,7 @@ import {
   timestamp,
   jsonb,
   index,
+  uniqueIndex,
   check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -90,7 +91,14 @@ export const responses = pgTable(
     isCorrect: boolean("is_correct"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("responses_attempt_id_idx").on(table.attemptId)]
+  (table) => [
+    index("responses_attempt_id_idx").on(table.attemptId),
+    // A candidate can re-run code or re-save a written answer any number
+    // of times -- each save should overwrite the same question's response
+    // within this attempt, not accumulate duplicate rows that would
+    // double-count toward the score.
+    uniqueIndex("responses_attempt_question_unique").on(table.attemptId, table.questionId),
+  ]
 );
 
 export const attributeScores = pgTable(

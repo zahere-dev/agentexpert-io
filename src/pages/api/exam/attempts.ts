@@ -34,14 +34,9 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // Question bank is still small (see thoughtprocess/03-phase-3-exam-ux.md)
-  // -- select up to lengthTier, randomized, rather than requiring an exact
-  // count that doesn't exist yet.
-  const selected = await db
-    .select()
-    .from(questions)
-    .where(sql`${questions.scenarioType} = 'execution'`)
-    .orderBy(sql`random()`)
-    .limit(lengthTier);
+  // -- select up to lengthTier across both scenario types, randomized,
+  // rather than requiring an exact count that doesn't exist yet.
+  const selected = await db.select().from(questions).orderBy(sql`random()`).limit(lengthTier);
 
   if (selected.length === 0) {
     return new Response(JSON.stringify({ error: "No questions available" }), {

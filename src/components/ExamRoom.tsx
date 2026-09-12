@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import "./exam-room.css";
 import { usePyodide } from "../lib/usePyodide";
 import { runChecks, type ToolCall, type CheckResult } from "../lib/examChecks";
-import type { QuestionRow } from "../lib/examTypes";
+import type { QuestionRow, ExecutionContent, ReasoningContent } from "../lib/examTypes";
 import { getAnonSessionId } from "../lib/anonSession";
 import { authClient } from "../lib/authClient";
+import AuthPanel from "./AuthPanel";
 
 type Phase = "picker" | "quiz" | "results";
 type LengthTier = 10 | 30 | 50;
@@ -19,6 +20,12 @@ interface AttributeResult {
   correct: number;
   total: number;
   percent: number;
+}
+
+interface Results {
+  overallPercent: number;
+  attributeResults: AttributeResult[];
+  ungradedCount: number;
 }
 
 const ICON_CHECK = (
@@ -41,6 +48,13 @@ async function getAuthHeader(): Promise<Record<string, string>> {
   }
 }
 
+function wrapSelection(textarea: HTMLTextAreaElement, before: string, after: string, value: string) {
+  const { selectionStart, selectionEnd } = textarea;
+  const selected = value.slice(selectionStart, selectionEnd);
+  const next = value.slice(0, selectionStart) + before + selected + after + value.slice(selectionEnd);
+  return next;
+}
+
 export default function ExamRoom() {
   const { loadState: pyodideState, pyodideRef } = usePyodide();
 
@@ -54,14 +68,20 @@ export default function ExamRoom() {
   const [answered, setAnswered] = useState<Record<string, boolean>>({});
   const [marked, setMarked] = useState<Set<number>>(new Set());
 
+  // Execution-question state
   const [code, setCode] = useState("");
   const [log, setLog] = useState<LogLine[]>([]);
   const [checks, setChecks] = useState<CheckResult[] | null>(null);
   const [running, setRunning] = useState(false);
 
-  const [results, setResults] = useState<{ overallPercent: number; attributeResults: AttributeResult[] } | null>(
-    null
-  );
+  // Reasoning-question state
+  const [reasoningAnswers, setReasoningAnswers] = useState<Record<string, string>>({});
+  const [sampleOpen, setSampleOpen] = useState<Record<string, boolean>>({});
+  const answerTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const [results, setResults] = useState<Results | null>(null);
+
+  const question = examQuestions[index];
 
   async function startExam() {
     setStarting(true);
@@ -78,6 +98,7 @@ export default function ExamRoom() {
       setIndex(0);
       setAnswered({});
       setMarked(new Set());
+      setReasoningAnswers({});
       setPhase("quiz");
       loadQuestion(data.questions[0]);
     } catch (err) {
@@ -87,20 +108,36 @@ export default function ExamRoom() {
     }
   }
 
-  function loadQuestion(question: QuestionRow) {
-    setCode(question.content.starterCode);
-    setLog([{ text: "Ready. Click Run to execute your code.", kind: "muted" }]);
+  function loadQuestion(q: QuestionRow) {
     setChecks(null);
-    if (pyodideRef.current) {
-      pyodideRef.current.runPython(question.content.harnessSource);
+    if (q.scenarioType === "execution") {
+      const content = q.content as ExecutionContent;
+      setCode(content.starterCode);
+      setLog([{ text: "Ready. Click Run to execute your code.", kind: "muted" }]);
+      if (pyodideRef.current) {
+        pyodideRef.current.runPython(content.harnessSource);
+      }
     }
   }
 
-  const question = examQuestions[index];
+  async function saveResponse(q: QuestionRow, answer: unknown, trace: ToolCall[] | null, isCorrect: boolean | null) {
+    if (!attemptId) return;
+    setAnswered((prev) => ({ ...prev, [q.id]: true }));
+    try {
+      await fetch(`/api/exam/attempts/${attemptId}/responses`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionId: q.id, answer, trace, isCorrect }),
+      });
+    } catch (err) {
+      console.error("Failed to save response:", err);
+    }
+  }
 
   async function run() {
     const pyodide = pyodideRef.current;
-    if (!pyodide || running || !question) return;
+    if (!pyodide || running || !question || question.scenarioType !== "execution") return;
+    const content = question.content as ExecutionContent;
 
     setRunning(true);
     setChecks(null);
@@ -110,41 +147,52 @@ export default function ExamRoom() {
     pyodide.setStderr({ batched: (text: string) => lines.push({ text, kind: "error" }) });
 
     let trace: ToolCall[] = [];
-    let isCorrect: boolean | null = null;
+    let isCorrect = false;
 
     try {
       pyodide.runPython("CALL_LOG.clear()");
       await pyodide.runPythonAsync(code);
       const rawTrace = pyodide.globals.get("CALL_LOG").toJs({ dict_converter: Object.fromEntries });
       trace = rawTrace.map((t: any) => ({ tool: t.tool, args: t.args }));
-      const results = runChecks(trace, question.content.checks);
-      setChecks(results);
-      isCorrect = results.every((r) => r.passed);
+      const checkResults = runChecks(trace, content.checks);
+      setChecks(checkResults);
+      isCorrect = checkResults.every((r) => r.passed);
       if (lines.length === 0) lines.push({ text: "(no output)", kind: "muted" });
     } catch (err) {
       lines.push({ text: String(err), kind: "error" });
       setChecks([]);
-      isCorrect = false;
     } finally {
       setLog(lines);
       setRunning(false);
     }
 
-    setAnswered((prev) => ({ ...prev, [question.id]: true }));
+    await saveResponse(question, code, trace, isCorrect);
+  }
 
-    if (attemptId) {
-      fetch(`/api/exam/attempts/${attemptId}/responses`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionId: question.id, answer: code, trace, isCorrect }),
-      }).catch((err) => console.error("Failed to save response:", err));
+  function maybeSaveReasoningAnswer() {
+    if (!question || question.scenarioType !== "reasoning") return;
+    const text = reasoningAnswers[question.id];
+    if (text && text.trim().length > 0) {
+      saveResponse(question, text, null, null);
     }
   }
 
   function goTo(i: number) {
     if (i < 0 || i >= examQuestions.length) return;
+    maybeSaveReasoningAnswer();
     setIndex(i);
     loadQuestion(examQuestions[i]);
+  }
+
+  function applyFormat(cmd: "bold" | "italic" | "list") {
+    const ta = answerTextareaRef.current;
+    if (!ta || !question) return;
+    const value = reasoningAnswers[question.id] ?? "";
+    let next = value;
+    if (cmd === "bold") next = wrapSelection(ta, "**", "**", value);
+    else if (cmd === "italic") next = wrapSelection(ta, "*", "*", value);
+    else if (cmd === "list") next = wrapSelection(ta, "- ", "", value);
+    setReasoningAnswers((prev) => ({ ...prev, [question.id]: next }));
   }
 
   function toggleMark() {
@@ -158,6 +206,7 @@ export default function ExamRoom() {
 
   async function endExam() {
     if (!attemptId) return;
+    maybeSaveReasoningAnswer();
     const res = await fetch(`/api/exam/attempts/${attemptId}/complete`, { method: "POST" });
     const data = await res.json();
     setResults(data);
@@ -170,7 +219,8 @@ export default function ExamRoom() {
         <div className="exam-picker">
           <p className="exam-picker-title">Where are you in your agent-building journey?</p>
           <p className="exam-picker-desc">
-            Real scenarios, real code, real grading -- not multiple choice. Pick how many questions.
+            Real scenarios -- some graded by running your code, some by your written reasoning. Pick how many
+            questions.
           </p>
           <div className="exam-length-options">
             {[10, 30, 50].map((n) => (
@@ -213,7 +263,7 @@ export default function ExamRoom() {
                 <div className="exam-attr-row-head">
                   <span>{a.attribute}</span>
                   <span>
-                    {a.correct}/{a.total} · {a.percent}%
+                    {a.correct}/{a.total} {"·"} {a.percent}%
                   </span>
                 </div>
                 <div className="exam-bar-track">
@@ -222,6 +272,12 @@ export default function ExamRoom() {
               </div>
             ))}
           </div>
+          {results.ungradedCount > 0 && (
+            <p className="exam-ungraded-note">
+              {results.ungradedCount} written response{results.ungradedCount > 1 ? "s" : ""} recorded and queued for
+              rubric review -- not included in the score above yet.
+            </p>
+          )}
         </div>
       </div>
     );
@@ -231,11 +287,27 @@ export default function ExamRoom() {
 
   const progressPct = Math.round(((index + 1) / examQuestions.length) * 100);
   const passedCount = checks?.filter((c) => c.passed).length ?? null;
+  const isExecution = question.scenarioType === "execution";
+  const reasoningContent = !isExecution ? (question.content as ReasoningContent) : null;
+  const isSampleOpen = sampleOpen[question.id] ?? false;
 
   return (
     <div className="exam-room">
       <div className="exam-topbar">
         <div className="exam-topbar-left">
+          <div className="exam-brand">
+            <div className="exam-brand-mark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="5" r="2.5" />
+                <path d="M12 7.5V12" />
+                <circle cx="6" cy="17" r="2.5" />
+                <circle cx="18" cy="17" r="2.5" />
+                <path d="M12 12 6 14.7M12 12l6 2.7" />
+              </svg>
+            </div>
+            <span className="exam-brand-name">agentexpert.io</span>
+          </div>
+          <span className="exam-topbar-divider" />
           <span className="exam-page-title">Scenario Question</span>
         </div>
         <div className="exam-topbar-right">
@@ -247,6 +319,7 @@ export default function ExamRoom() {
               <div className="exam-progress-fill" style={{ width: `${progressPct}%` }} />
             </div>
           </div>
+          <AuthPanel />
           <button className="exam-end-btn" onClick={endExam}>
             End Exam
           </button>
@@ -282,6 +355,10 @@ export default function ExamRoom() {
           <div className="exam-meta-item">
             <span className="exam-meta-label">DIFFICULTY</span>
             <span className={`exam-difficulty-pill d${question.difficulty}`}>{question.difficulty}/5</span>
+          </div>
+          <div className="exam-meta-item">
+            <span className="exam-meta-label">FORMAT</span>
+            <span className="exam-meta-value">{isExecution ? "Run code" : "Written answer"}</span>
           </div>
         </aside>
 
@@ -350,43 +427,95 @@ export default function ExamRoom() {
         </section>
 
         <section className="exam-answer-pane">
-          <div className="exam-answer-head">
-            <h3>Your Answer</h3>
-            <p>Write the agent's response as real Python -- it runs against the tools above.</p>
-          </div>
-
-          <div className="exam-editor-shell">
-            <div className="exam-editor-topbar">
-              <span>agent_response.py</span>
-              <button className="exam-run-btn" onClick={run} disabled={running}>
-                {running ? "Running…" : "Run"}
-              </button>
-            </div>
-            <textarea className="exam-code" spellCheck={false} value={code} onChange={(e) => setCode(e.target.value)} />
-            <div className="exam-output">
-              {log.map((l, i) => (
-                <div key={i} className={`line-${l.kind}`}>
-                  {l.text}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {checks && (
-            <div className="exam-checks-box">
-              <div className="exam-checks-head">
-                Grading result
-                <span className="exam-checks-score">
-                  {passedCount} of {checks.length} checks passed
-                </span>
+          {isExecution ? (
+            <>
+              <div className="exam-answer-head">
+                <h3>Your Answer</h3>
+                <p>Write the agent's response as real Python -- it runs against the tools above.</p>
               </div>
-              {checks.map((c, i) => (
-                <div className="exam-check-item" key={i}>
-                  <span className={`exam-check-icon ${c.passed ? "pass" : "fail"}`}>{c.passed ? ICON_CHECK : ICON_CROSS}</span>
-                  <span>{c.label}</span>
+
+              <div className="exam-editor-shell">
+                <div className="exam-editor-topbar">
+                  <span>agent_response.py</span>
+                  <button className="exam-run-btn" onClick={run} disabled={running}>
+                    {running ? "Running…" : "Run"}
+                  </button>
                 </div>
-              ))}
-            </div>
+                <textarea className="exam-code" spellCheck={false} value={code} onChange={(e) => setCode(e.target.value)} />
+                <div className="exam-output">
+                  {log.map((l, i) => (
+                    <div key={i} className={`line-${l.kind}`}>
+                      {l.text}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {checks && (
+                <div className="exam-checks-box">
+                  <div className="exam-checks-head">
+                    Grading result
+                    <span className="exam-checks-score">
+                      {passedCount} of {checks.length} checks passed
+                    </span>
+                  </div>
+                  {checks.map((c, i) => (
+                    <div className="exam-check-item" key={i}>
+                      <span className={`exam-check-icon ${c.passed ? "pass" : "fail"}`}>{c.passed ? ICON_CHECK : ICON_CROSS}</span>
+                      <span>{c.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="exam-answer-head">
+                <h3>Your Answer</h3>
+                <p>Provide your response to the scenario.</p>
+              </div>
+
+              <div className="exam-editor-shell exam-editor-shell-light">
+                <div className="exam-format-toolbar">
+                  <button onClick={() => applyFormat("bold")} title="Bold">
+                    <strong>B</strong>
+                  </button>
+                  <button onClick={() => applyFormat("italic")} title="Italic">
+                    <em>I</em>
+                  </button>
+                  <button onClick={() => applyFormat("list")} title="Bulleted list">
+                    &bull;
+                  </button>
+                </div>
+                <textarea
+                  ref={answerTextareaRef}
+                  className="exam-reasoning-textarea"
+                  placeholder="Walk through what the agent should do, what it must avoid, and what a strong final response looks like…"
+                  value={reasoningAnswers[question.id] ?? ""}
+                  onChange={(e) => setReasoningAnswers((prev) => ({ ...prev, [question.id]: e.target.value }))}
+                  onBlur={maybeSaveReasoningAnswer}
+                />
+              </div>
+
+              <div className="exam-great-box">
+                <div className="exam-great-head">What a Great Answer Looks Like</div>
+                <ul>
+                  {reasoningContent!.great.map((g, i) => (
+                    <li key={i}>
+                      <span className="exam-check-icon pass">{ICON_CHECK}</span>
+                      <span>{g}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  className="exam-sample-toggle"
+                  onClick={() => setSampleOpen((prev) => ({ ...prev, [question.id]: !isSampleOpen }))}
+                >
+                  {isSampleOpen ? "Hide sample answer" : "Show sample answer →"}
+                </button>
+                {isSampleOpen && <div className="exam-sample-body">{reasoningContent!.sampleAnswer}</div>}
+              </div>
+            </>
           )}
         </section>
       </div>

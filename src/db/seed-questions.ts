@@ -1,6 +1,6 @@
 import { db } from "./client";
 import { questions } from "./schema";
-import type { ExecutionContent } from "../lib/examTypes";
+import type { ExecutionContent, ReasoningContent } from "../lib/examTypes";
 
 /**
  * Three real, fully-working execution scenarios -- deliberately covering
@@ -203,6 +203,85 @@ print("result:", result)
   },
 ];
 
+/**
+ * The code simulator doesn't fit every skill area -- system design and
+ * multi-agent coordination questions are about a design decision, not a
+ * sequence of tool calls, so there's no honest mock-tool harness to build
+ * for them. These stay as written-answer questions, reusing the "what a
+ * great answer looks like" + sample-answer self-assessment format from the
+ * original exam mockup. Not auto-graded (see ReasoningContent's docstring).
+ */
+const REASONING_SEED: Array<{
+  label: string;
+  psychometricAttribute: string;
+  difficulty: number;
+  content: ReasoningContent;
+}> = [
+  {
+    label: "Design a 3-agent onboarding assistant",
+    psychometricAttribute: "System Design",
+    difficulty: 4,
+    content: {
+      request:
+        "Design the agent team for a new-hire onboarding assistant that has to answer HR policy questions, set up accounts, and schedule orientation meetings.",
+      tools: [
+        { name: "policy_qa_agent", description: "Specialist for HR policy/benefits questions.", params: ["question (string)"] },
+        { name: "provisioning_agent", description: "Specialist that creates accounts/access.", params: ["new_hire_id (string)"] },
+        { name: "scheduling_agent", description: "Specialist that books orientation sessions.", params: ["new_hire_id (string)"] },
+      ],
+      constraints: [
+        "Provisioning actions must be auditable and reversible.",
+        "The new hire should feel like they're talking to one assistant, not three.",
+        "No single specialist should need to know about the others' internals.",
+      ],
+      todo: [
+        "How would you split responsibility across the three specialists?",
+        "What does the orchestrator need to own itself?",
+        "What would make this feel like one coherent assistant to the new hire?",
+      ],
+      great: [
+        "Gives each specialist a narrow, non-overlapping responsibility",
+        "Keeps an orchestrator layer that routes intent, rather than one flat agent doing everything",
+        "Accounts for provisioning needing audit/reversibility, unlike the other two",
+        "Designs for a single conversational voice back to the new hire",
+      ],
+      sampleAnswer:
+        "One orchestrator routes each message to policy_qa_agent, provisioning_agent, or scheduling_agent based on intent, and always replies in a single consistent voice regardless of which specialist handled it. provisioning_agent gets extra guardrails -- every account action is logged and reversible, unlike a read-only policy question. No specialist needs to know the others exist; the orchestrator is the only one holding the full picture.",
+    },
+  },
+  {
+    label: "Research, write, and edit -- in what order?",
+    psychometricAttribute: "Multi-Agent Coordination",
+    difficulty: 3,
+    content: {
+      request: "Publish a blog post: research the topic, write a draft, and have it edited for tone before it goes out.",
+      tools: [
+        { name: "researcher_agent", description: "Sub-agent that gathers and cites sources on a topic.", params: ["topic (string)"] },
+        { name: "writer_agent", description: "Sub-agent that drafts a post from research notes.", params: ["research (object)"] },
+        { name: "editor_agent", description: "Sub-agent that reviews a draft for tone and clarity.", params: ["draft (string)"] },
+      ],
+      constraints: [
+        "No sub-agent should skip its predecessor's output.",
+        "The editor must see the writer's draft, not the raw research.",
+        "Nothing publishes without a human sign-off step.",
+      ],
+      todo: [
+        "In what order should the sub-agents run, and why?",
+        "What should the orchestrator avoid doing itself?",
+        "What would a strong handoff between agents look like?",
+      ],
+      great: [
+        "Runs the three sub-agents in a dependency-respecting order",
+        "Keeps the orchestrator thin -- it delegates instead of doing the writing itself",
+        "Passes each agent exactly the input it needs, not everything",
+        "Stops short of publishing without a human checkpoint",
+      ],
+      sampleAnswer:
+        "Run researcher_agent(topic) first, since nothing downstream can start without sourced facts. Pass its output to writer_agent to produce a draft. Pass only the draft (not the raw research) to editor_agent for a tone pass. The orchestrator should delegate all three jobs rather than writing or editing anything itself, and should present the edited draft to the human for approval before anything is published.",
+    },
+  },
+];
+
 async function main() {
   for (const q of SEED) {
     await db.insert(questions).values({
@@ -210,6 +289,16 @@ async function main() {
       psychometricAttribute: q.psychometricAttribute,
       difficulty: q.difficulty,
       scenarioType: "execution",
+      content: q.content,
+    });
+    console.log(`Inserted: ${q.label}`);
+  }
+  for (const q of REASONING_SEED) {
+    await db.insert(questions).values({
+      label: q.label,
+      psychometricAttribute: q.psychometricAttribute,
+      difficulty: q.difficulty,
+      scenarioType: "reasoning",
       content: q.content,
     });
     console.log(`Inserted: ${q.label}`);
