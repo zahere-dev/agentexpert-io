@@ -1,0 +1,7 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Dashboard from '../components/Dashboard.tsx';
+---
+<Layout title="Your Progress" description="Attempt history, score trend, and areas to improve.">
+  <Dashboard client:only="react" />
+</Layout>

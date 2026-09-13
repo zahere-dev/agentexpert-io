@@ -424,6 +424,7 @@ export default function ExamRoom() {
           )}
           {startError && <p className="exam-start-error">{startError}</p>}
           <div className="exam-picker-foot">
+            {attemptCount && <a href="/dashboard">Your Dashboard</a>}
             <a href="/downloads">Downloads</a>
             <a href="https://www.youtube.com/@adaptiveengineer" target="_blank" rel="noopener noreferrer">YouTube</a>
             <a href="https://newsletter.adaptiveengineer.com/" target="_blank" rel="noopener noreferrer">Newsletter</a>
@@ -467,6 +468,11 @@ export default function ExamRoom() {
               <p className="exam-ungraded-note">
                 {results.ungradedCount} written response{results.ungradedCount > 1 ? "s" : ""} recorded and queued
                 for rubric review -- not included in the score above yet.
+              </p>
+            )}
+            {full && (
+              <p className="exam-dashboard-link">
+                <a href="/dashboard">See your full progress across attempts →</a>
               </p>
             )}
           </div>

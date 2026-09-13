@@ -70,6 +70,16 @@ reconstructed after the fact.
   questions down to genuine blank skeletons, and changed the seed script
   from insert-once to sync-on-label so a content fix like this one
   actually reaches the database on the next run.
+- [12-a-real-dashboard-page.md](./12-a-real-dashboard-page.md) — the user
+  asked "where is the dashboard?" and the honest answer was "there wasn't
+  one, only a one-time post-exam results screen." Built a real, persistent
+  `/dashboard`: score trend across attempts, areas to improve aggregated
+  across *all* completed attempts (not just the latest), and attempt
+  history. Verified the signed-out gate for real; verified the signed-in
+  populated view via a temporary preview hook (deleted before commit)
+  since Better Auth's client-side JWT flow couldn't be faked over the
+  network alone — and that check caught a real ordering bug in the test
+  data itself, not the component.
 
 New entries get added as `NN-short-name.md`, numbered in the order decisions
 were made. Don't edit old entries to reflect later reversals — add a new
