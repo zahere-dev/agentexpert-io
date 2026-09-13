@@ -54,6 +54,15 @@ reconstructed after the fact.
   a clearly-labeled placeholder stands in for the still-missing intro
   video, and the old footer's Downloads/YouTube/Newsletter links move to
   the picker screen so `/downloads` doesn't get orphaned.
+- [10-second-batch-of-execution-scenarios.md](./10-second-batch-of-execution-scenarios.md) —
+  ten more execution scenarios (9 → 19 questions total), each built around
+  a distinct failure mode (retries, idempotency, authorization, cost
+  limits, input validation, scheduling conflicts, PII redaction,
+  misdiagnosis, provider fallback, prompt injection) instead of more
+  happy-path variations; made the seed script safely re-runnable in the
+  process; verified every new question's model solution actually passes
+  its own checks by running it through real Python, not just eyeballing
+  the JSON.
 
 New entries get added as `NN-short-name.md`, numbered in the order decisions
 were made. Don't edit old entries to reflect later reversals — add a new
