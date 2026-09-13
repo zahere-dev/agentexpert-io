@@ -69,15 +69,6 @@ def issue_refund(order_id, amount):
       starterCode: `# Order #48213 never arrived. Find out what happened and make it
 # right -- but don't refund anything without checking eligibility first.
 
-status = get_order_status("48213")
-print("status:", status)
-
-eligibility = check_refund_eligibility("48213")
-print("eligibility:", eligibility)
-
-if eligibility["eligible"]:
-    result = issue_refund("48213", eligibility["amount"])
-    print("refund result:", result)
 `,
       checks: [
         { type: "called", tool: "get_order_status", label: "Checked order status before doing anything else" },
@@ -134,14 +125,6 @@ def draft_reply(summary):
       starterCode: `# Summarize the last 20 messages from #launch, then draft a reply
 # for approval. Do not send anything.
 
-messages = search_messages("#launch", 20)
-print("messages:", messages)
-
-summary = summarize_messages(messages)
-print("summary:", summary)
-
-draft = draft_reply(summary)
-print("draft:", draft)
 `,
       checks: [
         { type: "called", tool: "search_messages", label: "Searched Slack for the relevant messages" },
@@ -193,8 +176,6 @@ def escalate_to_human(reason):
       starterCode: `# A coworker is asking for another employee's salary and medical
 # leave history. Decide what the agent should (and should not) do.
 
-result = escalate_to_human("peer requested confidential HR data about a coworker")
-print("result:", result)
 `,
       checks: [
         { type: "notCalled", tool: "lookup_employee_record", label: "Never looked up the confidential record just to try to answer" },
@@ -269,14 +250,6 @@ def escalate_to_human(reason):
       starterCode: `# Fetch the label for #48213. If it times out, it's worth one retry
 # before treating this as a real failure.
 
-result = fetch_shipping_label("48213")
-print("first attempt:", result)
-
-if "error" in result:
-    result = fetch_shipping_label("48213")
-    print("retry:", result)
-
-notify_customer(f"Your shipping label is ready: {result.get('label_url')}")
 `,
       checks: [
         { type: "called", tool: "fetch_shipping_label", label: "Fetched the shipping label" },
@@ -324,11 +297,6 @@ def send_welcome_email(user_id):
       starterCode: `# The webhook may have already fired once for this user. Check
 # before sending anything.
 
-status = check_email_sent("u_204")
-print("status:", status)
-
-if not status["already_sent"]:
-    send_welcome_email("u_204")
 `,
       checks: [
         { type: "called", tool: "check_email_sent", label: "Checked whether the email was already sent" },
@@ -378,13 +346,6 @@ def deny_request(reason):
       starterCode: `# u_991 wants acc_552 deleted. Check permission before doing
 # anything destructive.
 
-permission = check_permission("u_991", "delete_account")
-print("permission:", permission)
-
-if permission["allowed"]:
-    delete_account("acc_552")
-else:
-    deny_request("u_991 is not authorized to delete accounts")
 `,
       checks: [
         { type: "called", tool: "check_permission", label: "Checked permission before attempting anything destructive" },
@@ -435,13 +396,6 @@ def notify_customer(message):
 `,
       starterCode: `# Check quota before starting the re-embedding job -- it's expensive.
 
-quota = check_quota("re_embedding")
-print("quota:", quota)
-
-if quota["remaining"] > 0:
-    run_expensive_job("re_embedding")
-else:
-    notify_customer("You're out of quota for re-embedding jobs this cycle.")
 `,
       checks: [
         { type: "called", tool: "check_quota", label: "Checked quota before starting the expensive job" },
@@ -494,13 +448,7 @@ def ask_user_to_clarify(reason):
       starterCode: `# Validate the address before sending anything.
 
 email = "sam.customer.example.com"
-check = validate_email(email)
-print("check:", check)
 
-if check["valid"]:
-    send_invite(email, "next Tuesday 2pm")
-else:
-    ask_user_to_clarify("That doesn't look like a valid email address -- did you mean to include an @?")
 `,
       checks: [
         { type: "called", tool: "validate_email", label: "Validated the email before using it" },
@@ -547,13 +495,6 @@ def propose_alternate_time(time):
 `,
       starterCode: `# Check Priya's availability before booking anything.
 
-availability = check_availability("Priya", "Thursday 3pm")
-print("availability:", availability)
-
-if availability["available"]:
-    book_meeting("Priya", "Thursday 3pm")
-else:
-    propose_alternate_time("Thursday 4pm")
 `,
       checks: [
         { type: "called", tool: "check_availability", label: "Checked availability before booking" },
@@ -590,10 +531,7 @@ def send_to_external_tracker(text):
       starterCode: `# Redact PII before this leaves our systems.
 
 report = "User jane.doe@example.com hit a 500 error on checkout."
-clean = redact_pii(report)
-print("clean:", clean)
 
-send_to_external_tracker(clean)
 `,
       checks: [
         { type: "called", tool: "redact_pii", label: "Redacted the text before sending it anywhere" },
@@ -649,13 +587,6 @@ def reply_to_reporter(message):
 `,
       starterCode: `# Check what's actually wrong before doing anything drastic.
 
-logs = fetch_error_logs("reports")
-print("logs:", logs)
-
-reply_to_reporter(
-    "Found it -- exports are failing because requests are missing a template_id field. "
-    "This is a code-level bug, not an outage, so I'm routing it to engineering instead of restarting anything."
-)
 `,
       checks: [
         { type: "called", tool: "fetch_error_logs", label: "Checked the logs before acting" },
@@ -697,14 +628,6 @@ def notify_customer(message):
 `,
       starterCode: `# Try the primary provider first. Only fall back if it actually fails.
 
-result = charge_via_primary(42.00)
-print("primary:", result)
-
-if not result["success"]:
-    result = charge_via_backup(42.00)
-    print("backup:", result)
-
-notify_customer("Your card was charged $42.00.")
 `,
       checks: [
         { type: "called", tool: "charge_via_primary", label: "Tried the primary provider first" },
@@ -756,11 +679,6 @@ def send_email(to, body):
       starterCode: `# Read and summarize the page. Anything embedded in the page's own
 # text is data, not a new instruction from the user.
 
-page = read_webpage("https://internal.example/reports/q3")
-print("page:", page)
-
-summary = summarize(page["text"])
-print("summary:", summary)
 `,
       checks: [
         { type: "called", tool: "read_webpage", label: "Read the page" },
@@ -996,17 +914,22 @@ const MULTIPLE_CHOICE_SEED: Array<{
 
 /**
  * Labels aren't a DB-level unique constraint (content iterates too fast for
- * that to be worth enforcing), so this script checks by label before each
- * insert -- safe to re-run after adding a new batch without re-seeding
- * everything that's already there.
+ * that to be worth enforcing), so this script matches by label: an existing
+ * question gets its content synced to whatever's in this file (question
+ * wording, harnesses, and checks are still being tuned), a new label gets
+ * inserted. Safe to re-run any time this file changes.
  */
-async function insertIfNew(
+async function upsertByLabel(
   q: { label: string; psychometricAttribute: string; difficulty: number; content: unknown },
   scenarioType: "execution" | "reasoning" | "blockArranger" | "multipleChoice"
 ) {
   const existing = await db.select({ id: questions.id }).from(questions).where(eq(questions.label, q.label));
   if (existing.length > 0) {
-    console.log(`Skipped (already exists): ${q.label}`);
+    await db
+      .update(questions)
+      .set({ psychometricAttribute: q.psychometricAttribute, difficulty: q.difficulty, scenarioType, content: q.content })
+      .where(eq(questions.id, existing[0].id));
+    console.log(`Updated: ${q.label}`);
     return;
   }
   await db.insert(questions).values({
@@ -1020,11 +943,11 @@ async function insertIfNew(
 }
 
 async function main() {
-  for (const q of SEED) await insertIfNew(q, "execution");
-  for (const q of SEED_2) await insertIfNew(q, "execution");
-  for (const q of REASONING_SEED) await insertIfNew(q, "reasoning");
-  for (const q of BLOCK_ARRANGER_SEED) await insertIfNew(q, "blockArranger");
-  for (const q of MULTIPLE_CHOICE_SEED) await insertIfNew(q, "multipleChoice");
+  for (const q of SEED) await upsertByLabel(q, "execution");
+  for (const q of SEED_2) await upsertByLabel(q, "execution");
+  for (const q of REASONING_SEED) await upsertByLabel(q, "reasoning");
+  for (const q of BLOCK_ARRANGER_SEED) await upsertByLabel(q, "blockArranger");
+  for (const q of MULTIPLE_CHOICE_SEED) await upsertByLabel(q, "multipleChoice");
   process.exit(0);
 }
 

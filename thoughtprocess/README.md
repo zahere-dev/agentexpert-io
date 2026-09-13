@@ -63,6 +63,13 @@ reconstructed after the fact.
   process; verified every new question's model solution actually passes
   its own checks by running it through real Python, not just eyeballing
   the JSON.
+- [11-fix-starter-code-gave-away-the-answer.md](./11-fix-starter-code-gave-away-the-answer.md) —
+  a real bug caught by the user from a screenshot: every execution
+  question's "starter" code was actually the full worked solution, so
+  clicking Run with zero edits passed outright. Fixed all 13 execution
+  questions down to genuine blank skeletons, and changed the seed script
+  from insert-once to sync-on-label so a content fix like this one
+  actually reaches the database on the next run.
 
 New entries get added as `NN-short-name.md`, numbered in the order decisions
 were made. Don't edit old entries to reflect later reversals — add a new
