@@ -1,0 +1,23 @@
+title: Experiments with Jev
+description: >-
+  Jev AI framework moves beyond text generation to focus on decision-making.
+  Learn how it acts as a logic layer for your agents.
+
+
+  Most LLMs struggle with decision-making because they focus on output rather
+  than strategy. This video explores the Jev AI framework, designed
+  specifically as a decision layer that sits in front of your models. We
+  break down how this architecture allows agents to search the web, call
+  tools, and execute queries with a consistent, repeatable pattern.
+
+
+  By decoupling the decision process from the generation process, you can
+  apply this logic across various tasks. We walk through the architectural
+  pattern that makes Jev a unique addition to your stack of agentic AI tools.
+  Whether you are building complex LLM architecture or just trying to
+  improve how your system interacts with external data, this breakdown
+  provides the architectural blueprint you need.
+type: github
+url: https://github.com/zahere-dev/sentiment-analysis-with-jev
+publishedAt: '2026-09-20'
+image: ./img/jev-experiments.png
